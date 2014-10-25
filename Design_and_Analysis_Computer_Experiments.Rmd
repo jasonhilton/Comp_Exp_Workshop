@@ -19,10 +19,49 @@ Date: 30^th^ October 2014
 
 In this workshop, we shall work through examples of a number of the techniques discussed in the preceding lectures. 
 
-All files and supporting information are available on the github page.
+All files and supporting information are available on the github page [https://github.com/jasonhilton/Comp_Exp_Workshop](https://github.com/jasonhilton/Comp_Exp_Workshop).
 
 
-#Part 1: Simple Methods
+#Part 1: Experimental Designs and Simple Metamodels  
+
+
+
+## A First Experiment  
+We will start by running some very simple experiments to examine some of the ideas discussed in the lecture. 
+
+We will run netlogo through R using the RNetLogo Library, which you are all familiar with. 
+You will need to edit the nl.path variable to point to the folder where netlogo is installed on your machine. 
+
+```{r}
+library(RNetLogo)
+nl.path<- "C:\\Program Files (x86)\\NetLogo 5.1.0"
+NLStart(nl.path, gui=F)
+```
+
+Let's load up the model. 
+
+```{r}
+model.path <- "/models/Sample Models/Earth Science/Fire.nlogo"
+
+NLLoadModel(paste(nl.path,model.path,sep=""))
+```
+
+
+
+Recall, we are interested in how our model *inputs* map to *outputs* or *responses*.
+We can use 
+```{r}
+NLCommand("set density 77")
+NLCommand("setup")
+NLDoCommand(100,"go")
+initial<- NLReport("initial-trees")
+burned<- NLReport("burned-trees")
+
+```
+
+
+
+
 
 
 
