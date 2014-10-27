@@ -19,19 +19,160 @@ Date: 30^th^ October 2014
 
 In this workshop, we shall work through examples of a number of the techniques discussed in the preceding lectures. 
 
-All files and supporting information are available on the github page.
+All files and supporting information are available on the github page [https://github.com/jasonhilton/Comp_Exp_Workshop](https://github.com/jasonhilton/Comp_Exp_Workshop).
+
+I shall try to keep the R code is clear as possible throughout, and include comments and explanations in the text, but remember that you can use the '?' command to access the R help for any command if necessary.
+Try this for the *lapply* is you are not already familiar with it. 
 
 
-#Part 1: Simple Methods
+#Part 1: Experimental Designs and Simple Metamodels  
+
+## A First Experiment  
+We will start by running some very simple experiments to examine some of the ideas discussed in the lecture. 
+
+We will run netlogo through R using the RNetLogo Library, which you are all familiar with. 
+You will need to edit the nl.path variable to point to the folder where netlogo is installed on your machine.
+
+Notice the 'gui' option has been set to false throughout this workshop, as running in 'headless' mode results in quicker runs. The gui is great for development, debugging and demonstration, but not necessarily much use for 'production' runs (ie, those required to produce your results).
+
+
+```r
+library(RNetLogo)
+nl.path<- "C:\\Program Files (x86)\\NetLogo 5.1.0"
+NLStart(nl.path, gui=F)
+```
+
+```
+## Error in NLStart(nl.path, gui = F): Name of object (nl.obj) to store the NetLogo instance
+##       is already in use. Please quit the used object first or choose a different name.
+```
+
+Our first experiment subject is Schelling's famous segregation model. Most of you will I expect already be familiar with this model by now, but a brief summary is given below in any case.
+
+This examines how individual's moderate preference for living with those similar to themselves can lead to almost complete separation of different types of people. The model aims to show how observed macro-level racial segregation patterns in American cities need not have been caused by explicit racism, but may emerged out of weaker micro-level preferences.
+
+This is one of the standard NetLogo models, so we can load it from the model library as below. 
+
+
+```r
+model.path <- "/models/Sample Models/Social Science/Segregation.nlogo"
+NLLoadModel(paste(nl.path,model.path,sep=""))
+```
+
+Recall, we are interested in how our model **inputs** map to outputs or **responses**.
+In this case we have two main inputs - the micro-level preference for similar agents, and the total number of agents present. Given the fixed grid size of $51*51$ patches, this latter input can also be thought of as the population density of the area in question. The output is the average proportion of similar neighbours over all agents - a proxy for segregation. 
+
+Let's run the simulation at one combination of inputs and print the output to the screen.
+
+```r
+NLCommand("set %-similar-wanted 50")
+NLCommand("set number 1500")
+NLCommand("setup")
+NLDoCommand(100,"go")
+NLReport("percent-similar")
+```
+
+```
+## [1] 88.26025
+```
+
+Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of $\frac{1500}{51^{2}} = $ 0.5767013, the average proportion of similar agents in a neighbourhood is around about 90%. 
+
+##Exploring the Parameter Space
+
+We want to examine how this response varies over the parameter space. An obvious - though not necessarily optimal - place to start is to hold one input steady while varying the other. 
+
+
+```r
+# Our desired inputs - a sequence from 0 to 100 increasing by 10 for similar
+similar_desired_range <- seq(0,100,10)
+number<-1500
+
+runModel<-function(similar,num){
+  # function running the model for 50 ticks at inputs 'similar' and 'num' 
+  # returning the global proportion similar
+  NLCommand("set %-similar-wanted", similar)
+  NLCommand("set number", num)
+  NLCommand("setup")
+  NLDoCommand(50,"go")
+  return(NLReport("percent-similar"))
+}
+
+# Apply the function runModel to each value in similar_desired, 
+# holding number of agents constant at 'number', returning results as an array.
+global_similar<-sapply(similar_desired_range, runModel, num=number)
 
 
 
+# plot the results 
+plot(similar_desired_range, global_similar, 
+     main=paste("Response by values of '%-similar-desired',", number, "agents"))
+```
 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+
+By observation, it seems that segregation increases with micro-level preference for similar neighbours up to a threshold of about 70-80% desired similar neighbours, at which point there is a sharp decrease to the 50%. Why might this be the case?
+
+Similarly, we can hold '%-similar-desired' steady, and vary only the number of agents in the simulation ( and by extension the population density)
+
+
+```r
+  similar_desired <- 50
+  number_range<-seq(500,2500,250)
+  global_similar2<-sapply(X=number_range, runModel, similar = similar_desired)
+  plot(number_range, global_similar2, 
+       main = paste("Response by number of agents. %-similar-wanted = ", similar_desired ))
+```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+
+Here it seems as though increasing the number of agents decreases segregation, although note the scale on the y-axis.
+
+By holding the one parameter fixed while varying the other, we are preventing ourselves from identifying any interaction between the variables, and leaving large areas of the parameter space unobserved. 
+
+We can see this by simply plotting our design:
+
+
+```r
+design<-data.frame(similar_desired=c(similar_desired_range,rep(similar_desired, length(number_range))),
+                  number=c(rep(number,length(similar_desired_range)), number_range))
+plot(design)
+```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
+
+To examine the corners of the parameter space, and to attempt to capture interactions between the variables, we will now run our simulation on a full factorial design. 
+We will use 5 levels.
+
+
+```r
+fact_design<-expand.grid(similar_desired=seq(0,100,25), number=seq(500,2500,500))
+
+plot(fact_design)
+```
+
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
+
+```r
+#fact_response<-mapply(runModel, fact_design["similar_desired"], fact_design["number"])
+```
+
+
+
+#Fractional factorials and response surfaces
+Now let's run the Schelling model using only 
 
 #Part 2: Uncertainty and Emulation
 
 
+## Assessing uncertainty using Monte Carlo
+
+In the lectures we discussed using Monte Carlo techniques to assess uncertainty at
 
 
+
+```r
+NLQuit()
+```
 
 
