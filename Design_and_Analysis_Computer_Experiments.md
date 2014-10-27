@@ -26,7 +26,9 @@ Try this for the *lapply* is you are not already familiar with it.
 
 This workshop leans heavily on ideas from 
 Managing Uncertainty in Complex Models Toolkit (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html)
-Santer, W., Williams, B, and Notz, W (2003)  *'Design and Analysis of Computer Experiements'*
+Santer, W., Williams, B, and Notz, W (2003)  *'Design and Analysis of Computer Experiements'*, Springer
+
+We are also using fewer simulation runs than we might generally wish for. This is largely because we want you to spend more time trying out the various methods, and less time waiting for simulations to finish running!
 
 #Part 1: Experimental Designs and Simple Metamodels  
 
@@ -77,10 +79,10 @@ NLReport("percent-similar")
 ```
 
 ```
-## [1] 88.44
+## [1] 88.89
 ```
 
-Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of $\frac{1500}{51^{2}} = $ 0.5767, the average proportion of similar agents in a neighbourhood is around about 90%. 
+Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of $\frac{1500}{51^{2}} =$ 0.5767, the average proportion of similar agents in a neighbourhood is around about 90%. 
 
 ##Exploring the Parameter Space
 
@@ -206,12 +208,16 @@ Often it is preferable to standardise the input space so that we can easily comp
 
 
 ```r
-transformInput<-function(input){
-  transformed_input<-input-min(input)
-  return(transformed_input/max(transformed_input))
+transformInput<-function(input, location, multiplier){
+  transformed_input<-input-location
+  return(transformed_input/multiplier)
 }
 
-trans_design<-data.frame(apply(fact_design, 2, transformInput))
+
+locations<-apply(fact_design,2,min)
+multipliers<-apply(fact_design,2,max)- locations
+
+trans_design<-data.frame(mapply(transformInput, fact_design, locations, multipliers))
 
 # for convenience, lets add our outputs as a column in the same data frame
 trans_design$response<-fact_response
@@ -221,7 +227,7 @@ We will start by fitting just a main effect to each input
 
 
 ```r
-model1<-with(trans_design, lm(response~ similar_desired + number))
+model1<-with(trans_design, lm(response ~ similar_desired + number))
 summary(model1)
 ```
 
@@ -232,36 +238,227 @@ summary(model1)
 ## 
 ## Residuals:
 ##    Min     1Q Median     3Q    Max 
-## -27.57 -12.24  -2.11  16.85  24.07 
+## -27.88 -13.44  -1.22  15.84  25.13 
 ## 
 ## Coefficients:
 ##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)        70.26       7.81    9.00  7.9e-09 ***
-## similar_desired    15.74       9.88    1.59     0.13    
-## number            -15.42       9.88   -1.56     0.13    
+## (Intercept)        70.58       7.89    8.94  8.9e-09 ***
+## similar_desired    16.30       9.99    1.63     0.12    
+## number            -16.92       9.99   -1.69     0.10    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 17.5 on 22 degrees of freedom
-## Multiple R-squared:  0.184,	Adjusted R-squared:  0.11 
-## F-statistic: 2.49 on 2 and 22 DF,  p-value: 0.106
+## Residual standard error: 17.7 on 22 degrees of freedom
+## Multiple R-squared:  0.201,	Adjusted R-squared:  0.128 
+## F-statistic: 2.77 on 2 and 22 DF,  p-value: 0.0848
 ```
 
-This is not a good fit to the data, and 
-
-# Validation
-
+This is not a good fit to the data, which is unsurprising given we observed significant curvature in our reponse surface, which can not be captured by linear terms in our model
+This lack of fit can clearly be identified by plotting the standardised residuals against the similar desired input.
 
 
-# Other designs
+```r
+plot(trans_design$similar_desired, rstandard(model1))
+```
+
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12.png) 
+
+Let's try adding higher order terms, and an interaction: 
 
 
-# Note on the purpose of meta-models 
+```r
+model2<- with(trans_design, 
+              lm( response ~ similar_desired * number + I (number**2) 
+                  + I(similar_desired**2)))
+summary(model2)
+```
+
+```
+## 
+## Call:
+## lm(formula = response ~ similar_desired * number + I(number^2) + 
+##     I(similar_desired^2))
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -15.057  -6.321   0.168   5.472  17.577 
+## 
+## Coefficients:
+##                        Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)               48.74       6.02    8.09  1.4e-07 ***
+## similar_desired          165.76      18.80    8.82  3.8e-08 ***
+## number                   -18.87      18.80   -1.00    0.328    
+## I(number^2)               15.56      16.73    0.93    0.364    
+## I(similar_desired^2)    -135.85      16.73   -8.12  1.3e-07 ***
+## similar_desired:number   -27.21      14.00   -1.94    0.067 .  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 8.75 on 19 degrees of freedom
+## Multiple R-squared:  0.831,	Adjusted R-squared:  0.786 
+## F-statistic: 18.6 on 5 and 19 DF,  p-value: 9.78e-07
+```
+This model is a much better fit to the data, as can be seen from the r^2^ coefficients.
+The residuals are still not perfect, but are considerably better than before.
+
+
+
+```r
+plot(trans_design$similar_desired, rstandard(model2))
+```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-141.png) 
+
+```r
+plot(trans_design$number, rstandard(model2))
+```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-142.png) 
+
+```r
+qqnorm(rstandard(model2))
+qqline(rstandard(model2))
+```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-143.png) 
+
+
+## Validation
+If we are to trust the results of meta-model, we need to confirm that it is a good fit for the underlying simulation. The best way of doing this is to run the simulation at new points, and compare these to the model predictions. 
+
+
+```r
+new_points <- data.frame(similar_desired=runif(10,0,100), number=runif(10,500,2500))
+valid_response <- mapply(runModel, new_points$similar_desired, new_points$number)
+
+
+trans_new_points <- data.frame(mapply(transformInput, 
+                                    new_points, locations, multipliers))
+model_predictions <- predict(model2, trans_new_points)
+
+error <- valid_response-model_predictions
+
+# Root Mean Squared Error
+RMSE <- sqrt(sum(error**2)/length(error))
+
+# 'Normalised' RMSE
+RMSE/diff(range(trans_design$response))
+```
+
+```
+## [1] 0.2388
+```
+
+The normalised RMSE is the probably too high for this model. This is a metric for assessing the error of a prediction based on the root of the average squared error, divided by the range over which the training set response varies. Thus it can be considered a sort of percentage error.  
+
+This might be because of the low number of data-points, but more likely it is due to the inadequacy of model we fit. ABM simulation are often to non-linear to expect simple response surfaces such as the one fitted above to do a good job of 'standing in' for the simulation. However, fitting a response surface does help us to understand the way in which the model responds to different inputs.
+
+
+The inadequacy of the model in prediction helps to motivate the non-parameteric methods such as kriging used in the next part of the workshop, where no specific functional form is assumed for the meta-model.
+
+
+## Sensitivity Analysis
+
+We can crudely examine the sensitivity of the model to inputs by considering the
+ANOVA decomposition of our model, and comparing the ratios of effect-specific sum of squares to the total:
+
+```r
+model_an<-anova(model2)
+
+model_an["Sum Sq"]/sum(model_an["Sum Sq"])
+```
+
+```
+##                          Sum Sq
+## similar_desired        0.096729
+## number                 0.104232
+## I(number^2)            0.007713
+## I(similar_desired^2)   0.588178
+## similar_desired:number 0.033714
+## Residuals              0.169434
+```
+This indicates that the squared effect of similar-desired is the most significant in our model. This fits with our eyeball intuition, noting the curved nature of the response surface. 
+
+## Other designs
+The R package 'lhs' allows easy generation of the LHS sample designs. 
+Try using this package and the improvedLHS command to generate an LHS design for the schelling model, and fitting a simple metamodel  to the data. 
+
+What happens to the RMSE for the lhs vs the factorial design, using the same validation points, using the same model and the same number of points?
+
+
+```r
+library(lhs)
+scaledDesign<-data.frame(improvedLHS(25,2))
+head(scaledDesign)
+```
+
+```
+##        X1     X2
+## 1 0.46250 0.8803
+## 2 0.06435 0.5229
+## 3 0.29989 0.9996
+## 4 0.08562 0.1068
+## 5 0.26465 0.3310
+## 6 0.23496 0.1742
+```
+
+```r
+colnames(scaledDesign)<-c("similar_desired", "number")
+
+lhs_design <- mapply(function(x,multiplier,location) (x*multiplier) + location, 
+       scaledDesign,multipliers, locations  )
+
+plot(lhs_design)
+```
+
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17.png) 
+
+```r
+colnames(lhs_design)<-c("similar_desired", "number")
+
+lhs_design<-data.frame(lhs_design)
+
+lhs_response<-mapply(runModel, lhs_design$similar_desired, lhs_design$number)
+
+scaledDesign$response<-lhs_response
+
+model_lhs1<-with(scaledDesign, lm(response~similar_desired+ number))
+
+model_lhs2<- with(scaledDesign, 
+              lm( response ~ similar_desired * number + I (number**2) 
+                  + I(similar_desired**2)))
+
+
+
+model_predictions_lhs <- predict(model_lhs2, trans_new_points)
+
+error <- valid_response-model_predictions_lhs
+
+# Root Mean Squared Error
+RMSE_lhs <- sqrt(sum(error**2)/length(error))
+
+# 'Normalised' RMSE
+RMSE_lhs/diff(range(trans_design$response))
+```
+
+```
+## [1] 0.1611
+```
+
+```r
+RMSE/diff(range(trans_design$response))
+```
+
+```
+## [1] 0.2388
+```
+
+## Note on the purpose of meta-models 
 
 It might appear that meta-models don't add much to simple plotting of outputs.
 For the example we have used here, this may be the case. We have studied a simple and above all low-dimension problem. 
 
-Once you include more parameters,
+Once you include more parameters, it becomes more and more difficult to identify interactions by eye, and model-based solutions become imperative. 
 
 
 #Part 2: Uncertainty and Emulation
@@ -273,7 +470,7 @@ In the lectures we discussed using Monte Carlo techniques to assess uncertainty 
 
 
 
-# Reading and Software
+# Appendix: Reading and Software
 
 A number of R packages might be able to help you in designing and analysing computer experiments.
 
