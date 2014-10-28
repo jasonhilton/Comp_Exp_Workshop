@@ -3,6 +3,8 @@ setwd("Z:/mydocuments/Documents/conferences and papers/abm course")
 library(knitr)
 
 
-knit("Design_and_Analysis_Computer_Experiments.Rmd")
+knit("master_Design_and_Analysis_Computer_Experiments.Rmd")
+knit("apply_basics.Rmd")
 
-
+library(rmarkdown)
+render('Design_and_Analysis_Computer_Experiments.md',html_document())
