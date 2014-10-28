@@ -1,17 +1,24 @@
 ---
+title: "Design and Analysis of Computer Experiments"
+author: "Jason Hilton and Jakub Bijak, University of Southampton"
+date: "Tuesday, October 28, 2014"
 output: html_document
 ---
+
+<!---
 Design and Analysis of Computer Experiments
 ========================================================
 
 
+
 **Jason Hilton and Jakub Bijak** - University of Southampton 
+-->
 
 Workshop given for IDEM 112 'Agent-based modelling and simulation'  
 Part of the MPIDR [International Advanced Studies in Demography series](http://www.demogr.mpg.de/en/education_career/international_advanced_studies_in_demography_3279/default.htm)
 
 Location: Max Planck Institute for Demographic Research, Rostock  
-Date: 30^th^ October 2014
+Date: 30<sup>th<\sup> October 2014
 
 ***
 
@@ -24,9 +31,11 @@ All files and supporting information are available on the github page [https://g
 I shall try to keep the R code is clear as possible throughout, and include comments and explanations in the text, but remember that you can use the '?' command to access the R help for any command if necessary.
 Try this for the *lapply* is you are not already familiar with it. 
 
-This workshop leans heavily on ideas from 
-Managing Uncertainty in Complex Models Toolkit (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html)
-Santer, W., Williams, B, and Notz, W (2003)  *'Design and Analysis of Computer Experiements'*, Springer
+This workshop leans heavily on ideas from  
+Managing Uncertainty in Complex Models Toolkit (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html) 
+
+Santer, W., Williams, B, and Notz, W (2003)  *'Design and Analysis of Computer Experiements'*, Springer  
+
 
 We are also using fewer simulation runs than we might generally wish for. This is largely because we want you to spend more time trying out the various methods, and less time waiting for simulations to finish running!
 
@@ -36,7 +45,7 @@ We are also using fewer simulation runs than we might generally wish for. This i
 We will start by running some very simple experiments to examine some of the ideas discussed in the lecture. 
 
 We will run netlogo through R using the RNetLogo Library, which you are all familiar with. 
-You will need to edit the nl.path variable to point to the folder where netlogo is installed on your machine.
+You will need to edit the 'nl.path' variable to point to the folder where netlogo is installed on your machine.
 
 Notice the 'gui' option has been set to false throughout this workshop, as running in 'headless' mode results in quicker runs. The gui is great for development, debugging and demonstration, but not necessarily much use for 'production' runs (ie, those required to produce your results).
 
@@ -46,11 +55,6 @@ library(RNetLogo)
 ### CHANGE THIS PATH if necessary ###
 nl.path<- "C:\\Program Files (x86)\\NetLogo 5.0.4"
 NLStart(nl.path, gui=F)
-```
-
-```
-## Error: Name of object (nl.obj) to store the NetLogo instance
-##       is already in use. Please quit the used object first or choose a different name.
 ```
 
 Our first experiment subject is Schelling's famous segregation model. Most of you will I expect already be familiar with this model by now, but a brief summary is given below in any case.
@@ -79,7 +83,7 @@ NLReport("percent-similar")
 ```
 
 ```
-## [1] 88.89
+## [1] 89.11
 ```
 
 Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of $\frac{1500}{51^{2}} =$ 0.5767, the average proportion of similar agents in a neighbourhood is around about 90%. 
@@ -199,7 +203,7 @@ filled.contour(unique(fact_design$similar_desired),
 
 ![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
 
-With both these methods, we have to be carefull to realise that the plot algorithms are interpolating between the points we have observed using a simple (meta)model.
+With both these methods, we have to be carefull to realise that the plot algorithms are interpolating between the points we have observed using a simple (meta)model. Also note that the surface is pretty uneven. This is because we are dealling with a *stochastic simulator*, so the unevenness is likely to be attributible to random noise from NetLogo's random number generator. We will talk more about randomness in the part 2 of this workshop. 
 
 
 # Response surfaces
@@ -238,30 +242,30 @@ summary(model1)
 ## 
 ## Residuals:
 ##    Min     1Q Median     3Q    Max 
-## -27.88 -13.44  -1.22  15.84  25.13 
+## -29.51 -12.31  -1.19  15.54  23.61 
 ## 
 ## Coefficients:
 ##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)        70.58       7.89    8.94  8.9e-09 ***
-## similar_desired    16.30       9.99    1.63     0.12    
-## number            -16.92       9.99   -1.69     0.10    
+## (Intercept)        71.04       7.87    9.03  7.5e-09 ***
+## similar_desired    17.61       9.95    1.77    0.091 .  
+## number            -16.82       9.95   -1.69    0.105    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 17.7 on 22 degrees of freedom
-## Multiple R-squared:  0.201,	Adjusted R-squared:  0.128 
-## F-statistic: 2.77 on 2 and 22 DF,  p-value: 0.0848
+## Residual standard error: 17.6 on 22 degrees of freedom
+## Multiple R-squared:  0.214,	Adjusted R-squared:  0.143 
+## F-statistic: 2.99 on 2 and 22 DF,  p-value: 0.0708
 ```
 
 This is not a good fit to the data, which is unsurprising given we observed significant curvature in our reponse surface, which can not be captured by linear terms in our model
-This lack of fit can clearly be identified by plotting the standardised residuals against the similar desired input.
+Problems with this model can clearly be identified by plotting the standardised residuals against the similar desired input - we would hope that there is no pattern to these residuals.
 
 
 ```r
 plot(trans_design$similar_desired, rstandard(model1))
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12.png) 
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
 
 Let's try adding higher order terms, and an interaction: 
 
@@ -280,47 +284,46 @@ summary(model2)
 ##     I(similar_desired^2))
 ## 
 ## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -15.057  -6.321   0.168   5.472  17.577 
+##    Min     1Q Median     3Q    Max 
+## -17.01  -5.05   1.31   5.75  17.44 
 ## 
 ## Coefficients:
 ##                        Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)               48.74       6.02    8.09  1.4e-07 ***
-## similar_desired          165.76      18.80    8.82  3.8e-08 ***
-## number                   -18.87      18.80   -1.00    0.328    
-## I(number^2)               15.56      16.73    0.93    0.364    
-## I(similar_desired^2)    -135.85      16.73   -8.12  1.3e-07 ***
-## similar_desired:number   -27.21      14.00   -1.94    0.067 .  
+## (Intercept)               50.10       6.48    7.73  2.8e-07 ***
+## similar_desired          162.85      20.23    8.05  1.5e-07 ***
+## number                   -20.59      20.23   -1.02     0.32    
+## I(number^2)               16.77      18.00    0.93     0.36    
+## I(similar_desired^2)    -132.25      18.00   -7.35  5.8e-07 ***
+## similar_desired:number   -26.00      15.06   -1.73     0.10    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 8.75 on 19 degrees of freedom
-## Multiple R-squared:  0.831,	Adjusted R-squared:  0.786 
-## F-statistic: 18.6 on 5 and 19 DF,  p-value: 9.78e-07
+## Residual standard error: 9.41 on 19 degrees of freedom
+## Multiple R-squared:  0.806,	Adjusted R-squared:  0.754 
+## F-statistic: 15.7 on 5 and 19 DF,  p-value: 3.47e-06
 ```
-This model is a much better fit to the data, as can be seen from the r^2^ coefficients.
+This model is a much better fit to the data, as can be seen from the r<sup>2</sup> coefficients.
 The residuals are still not perfect, but are considerably better than before.
-
 
 
 ```r
 plot(trans_design$similar_desired, rstandard(model2))
 ```
 
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-141.png) 
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-131.png) 
 
 ```r
 plot(trans_design$number, rstandard(model2))
 ```
 
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-142.png) 
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-132.png) 
 
 ```r
 qqnorm(rstandard(model2))
 qqline(rstandard(model2))
 ```
 
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-143.png) 
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-133.png) 
 
 
 ## Validation
@@ -346,12 +349,12 @@ RMSE/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.2388
+## [1] 0.254
 ```
 
 The normalised RMSE is the probably too high for this model. This is a metric for assessing the error of a prediction based on the root of the average squared error, divided by the range over which the training set response varies. Thus it can be considered a sort of percentage error.  
 
-This might be because of the low number of data-points, but more likely it is due to the inadequacy of model we fit. ABM simulation are often to non-linear to expect simple response surfaces such as the one fitted above to do a good job of 'standing in' for the simulation. However, fitting a response surface does help us to understand the way in which the model responds to different inputs.
+This might be because of the low number of data-points, but more likely it is due to the inadequacy of model we fit. ABM simulation are often too non-linear to expect simple response surfaces such as the one fitted above to do a good job of 'standing in' for the simulation. However, fitting a response surface does help us to understand the way in which the model responds to different inputs.
 
 
 The inadequacy of the model in prediction helps to motivate the non-parameteric methods such as kriging used in the next part of the workshop, where no specific functional form is assumed for the meta-model.
@@ -370,12 +373,12 @@ model_an["Sum Sq"]/sum(model_an["Sum Sq"])
 
 ```
 ##                          Sum Sq
-## similar_desired        0.096729
-## number                 0.104232
-## I(number^2)            0.007713
-## I(similar_desired^2)   0.588178
-## similar_desired:number 0.033714
-## Residuals              0.169434
+## similar_desired        0.111882
+## number                 0.102095
+## I(number^2)            0.008877
+## I(similar_desired^2)   0.552258
+## similar_desired:number 0.030496
+## Residuals              0.194393
 ```
 This indicates that the squared effect of similar-desired is the most significant in our model. This fits with our eyeball intuition, noting the curved nature of the response surface. 
 
@@ -394,12 +397,12 @@ head(scaledDesign)
 
 ```
 ##        X1     X2
-## 1 0.46250 0.8803
-## 2 0.06435 0.5229
-## 3 0.29989 0.9996
-## 4 0.08562 0.1068
-## 5 0.26465 0.3310
-## 6 0.23496 0.1742
+## 1 0.90933 0.7270
+## 2 0.54356 0.9318
+## 3 0.06172 0.1305
+## 4 0.98589 0.6066
+## 5 0.74548 0.2587
+## 6 0.87416 0.8752
 ```
 
 ```r
@@ -411,7 +414,7 @@ lhs_design <- mapply(function(x,multiplier,location) (x*multiplier) + location,
 plot(lhs_design)
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17.png) 
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16.png) 
 
 ```r
 colnames(lhs_design)<-c("similar_desired", "number")
@@ -442,7 +445,7 @@ RMSE_lhs/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.1611
+## [1] 0.1923
 ```
 
 ```r
@@ -450,7 +453,7 @@ RMSE/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.2388
+## [1] 0.254
 ```
 
 ## Note on the purpose of meta-models 
@@ -461,12 +464,408 @@ For the example we have used here, this may be the case. We have studied a simpl
 Once you include more parameters, it becomes more and more difficult to identify interactions by eye, and model-based solutions become imperative. 
 
 
-#Part 2: Uncertainty and Emulation
+#Part 2: Uncertainty quantification and Kriging-based Emulation
 
+In the first part of this workshop we have paid very little attention to the uncertainty inherent in simulation. We will start by examining how Monte Carlo techniques can be used to assess the effect of uncertainty. 
 
 ## Assessing uncertainty using Monte Carlo
+We will start by working with the forest fire model, again from the netlogo model library. This model display displays a lot of stochasticity in outputs, and so is a good target for uncertainty analysis. 
 
-In the lectures we discussed using Monte Carlo techniques to assess uncertainty at
+It models the spread of fire through a forest. It has only one parameter - the density of the trees in the forest in question. The simulation introduces fire to the edge of the fire, and lets it spread to any nearby trees. We are examining the proportion of burnt trees as an output. 
+
+
+
+```r
+model.path <- "/models/Sample Models/Earth Science/Fire.nlogo"
+NLLoadModel(paste(nl.path,model.path,sep=""))
+```
+
+As a test, let's run the simulation a few times at density 60. Note the considerable differences in outputs. 
+
+
+```r
+for (i in 1:4){
+  NLCommand("set density 60")
+  NLCommand("setup")
+  NLDoCommand(1000,"go")
+  initial <- NLReport("initial-trees")
+  burned  <- NLReport("burned-trees")
+  print(burned/initial)
+}
+```
+
+```
+## [1] 0.711
+## [1] 0.6997
+## [1] 0.7665
+## [1] 0.743
+```
+
+
+We need to rewrite our runModel function for the new simulation.
+
+
+```r
+runModel<-function(density){
+  # function running the model for 1000 ticks at input value 'density'
+  # returning the proportion of burned trees
+  NLCommand("set density", density)
+  NLCommand("setup")
+  NLDoCommand(1000,"go")
+  return(NLReport("burned-trees / initial-trees"))
+}
+```
+
+Now lets run the simulation 50 times at the density 60 to start to examine what the output *distribution* looks like at this point. When we are doing this sort of experiment it is useful to check how long each set of runs is going to take - otherwise we might be waiting for simulations that will never end!  
+
+The function'*system.time*' is our friend in this context - look at the third column in the output, "elapsed time" to assess the time taken. When working on this yourself, try this with a small number of runs and mutliply up to get an idea of how long it should take for the desired number.
+
+
+```r
+system.time( proportion_burned_60<-sapply(rep(60,50),runModel ))
+```
+
+```
+##    user  system elapsed 
+##   63.09    1.21   61.37
+```
+
+```r
+hist(proportion_burned_60)
+```
+
+![plot of chunk unnamed-chunk-20](figure/unnamed-chunk-20.png) 
+
+Notice how the results are spread over almost all the whole of the output space, with most of the density concentrated at the right of the distribution. Ideally we want to consider how this distribution changes across 
+
+As we are going to need to repeat our simulation a number of times,  it may be worth harnessing the advantages of parallel computing to speed the process up. 
+If your computer has multiple cores, with a bit of setup you can use parallel versions of the apply family of functions to split the work over a number of processors.
+
+
+```r
+NLQuit()
+
+library("parallel")
+
+# set number of cores to be used
+
+detectCores()
+```
+
+```
+## [1] 8
+```
+
+```r
+n_processors<-detectCores()-1
+# I tend to leave one core free, hence the -1, but you may not wish to do this.
+
+
+#create a cluster object in R
+cl<-makeCluster(n_processors)
+
+# set up the random number generators
+clusterSetRNGStream(cl)
+
+# create a function to set up the model on each core
+setupModel<-function(nl.path,model.path){
+  library(RNetLogo)
+  NLStart(nl.path,gui=F)
+  NLLoadModel(paste(nl.path,model.path,sep="")) 
+}
+
+# use the parallel version of sapply to run the function on each core
+invisible(parSapply(cl, rep(nl.path, n_processors), setupModel, model.path))
+```
+
+
+Now that we have a parallel cluster set up, let's try a few more runs:
+
+
+```r
+# run model using parSapply, and combine results with those from before.
+
+system.time(
+  proportion_burned_60_par<-parSapply(cl, rep(60,100), runModel)
+  )
+```
+
+```
+##    user  system elapsed 
+##    0.04    0.02   53.55
+```
+
+```r
+proportion_burned_60<-c( proportion_burned_60,  proportion_burned_60_par)
+```
+Hopefully you should notice that this took less time per run than before! We did twice as many runs this time, so we would hope the elapsed time is considerably less than twice the previous value. If not this is probably due to the overhead associated with sending information to different cores and putting it back together again. The more runs you are hoping to do, the more likely it is that you will be able to see benefits from parallelising your model runs.
+
+Note that if you are running this on a Mac or a LINUX based system such as Ubuntu, then you might be able to use the much simpler mclapply function (which, in my experience, is also faster).  
+
+Lets plot our outputs. We can also use the 'density' command to plot the smoothed continuous density of our observations.
+
+
+```r
+hist(proportion_burned_60,breaks=15)
+```
+
+![plot of chunk unnamed-chunk-23](figure/unnamed-chunk-231.png) 
+
+```r
+plot(density(proportion_burned_60))
+```
+
+![plot of chunk unnamed-chunk-23](figure/unnamed-chunk-232.png) 
+
+We now have 150 runs, and we can see from the above histogram that the distribution is pretty irregular. Clearly, a normality assumption will not be appropriate in this case. 
+
+Try and build up a picture of the uncertainty caused by simulation stochasticity across the following values of density by running repeat trials at each value.
+There is no need to do 150 runs at each point given time constraints, however - try around 25.
+
+
+```r
+densities<-seq(57,81,6)
+```
+
+
+Next, let's assume we have some prior information about the density of a particular forest we are interested in. We want know, given our information, expressed as a *distribution* over possible density values, what the probability of various proportions of forest destruction is. 
+
+Our prior states that the density of the forest has a normal distribution with mean .56 and sd 0.05. Sample from this distribution using rnorm, and run the simulation at the sampled points. Plot the density of this output distribution. 
+
+Now try the same exercise, but just hold the input steady at it's mean value, and examine the difference between the two distributions. 
+
+This is an example of incorporating the effect of *input uncertainty* into our output predictions. (Note this is NOT a case of Full Bayesian updating - we have not applied bayes rule to get a posterior, but used the prior and the model to induce a distribution on our output variable).
+
+
+```r
+# tidy up by closing NetLogo on each core, and stopping the cluster.
+clusterEvalQ(cl,NLQuit())
+```
+
+```
+## [[1]]
+## [1] "C:/Program Files (x86)/NetLogo 5.0.4"
+## 
+## [[2]]
+## [1] "C:/Program Files (x86)/NetLogo 5.0.4"
+## 
+## [[3]]
+## [1] "C:/Program Files (x86)/NetLogo 5.0.4"
+## 
+## [[4]]
+## [1] "C:/Program Files (x86)/NetLogo 5.0.4"
+## 
+## [[5]]
+## [1] "C:/Program Files (x86)/NetLogo 5.0.4"
+## 
+## [[6]]
+## [1] "C:/Program Files (x86)/NetLogo 5.0.4"
+## 
+## [[7]]
+## [1] "C:/Program Files (x86)/NetLogo 5.0.4"
+```
+
+```r
+stopCluster(cl)
+```
+
+
+
+# Kriging or Gaussian Processes
+
+## Kriging Models with DiceKriging
+
+Here we will go back to our schelling model and fit two different kriging models. 
+
+We will start by examining the DiceKriging package, which you will need to install from CRAN. This package uses the km command to create a kriging model object in the same way as the lm linear model command.
+
+Use the LHS sample and associated response you created earlier to fit the model.
+
+
+```r
+lhs_design$response<-lhs_response
+library("DiceKriging")
+
+kriging_m1<-km(response~similar_desired + number, lhs_design[,c(1,2)], lhs_design[,3], nugget.estim=T)
+```
+
+```
+## 
+## optimisation start
+## ------------------
+## * estimation method   : MLE 
+## * optimisation method : BFGS 
+## * analytical gradient : used
+## * trend model : ~similar_desired + number
+## * covariance model : 
+##   - type :  matern5_2 
+##   - nugget : unknown homogenous nugget effect 
+##   - parameters lower bounds :  1e-10 1e-10 
+##   - parameters upper bounds :  195.3 3883 
+##   - upper bound for alpha   :  1 
+##   - best initial point among  20  :
+##          coef.     :  25.9 1550 
+##          alpha.    :  0.5854 
+## 
+## N = 3, M = 5 machine precision = 2.22045e-16
+## At X0, 0 variables are exactly at the bounds
+## At iterate     0  f=        98.61  |proj g|=      0.41455
+## At iterate     1  f =       96.285  |proj g|=       0.23453
+## At iterate     2  f =        95.46  |proj g|=       0.17846
+## At iterate     3  f =       95.306  |proj g|=       0.16284
+## At iterate     4  f =       95.305  |proj g|=       0.52024
+## At iterate     5  f =       95.304  |proj g|=       0.16122
+## At iterate     6  f =       95.304  |proj g|=       0.16139
+## At iterate     7  f =       95.302  |proj g|=       0.16249
+## At iterate     8  f =       95.298  |proj g|=       0.16373
+## At iterate     9  f =       95.286  |proj g|=       0.16586
+## At iterate    10  f =       95.256  |proj g|=       0.16869
+## At iterate    11  f =       95.182  |proj g|=       0.17137
+## At iterate    12  f =       95.007  |proj g|=        0.1775
+## At iterate    13  f =       94.748  |proj g|=       0.22461
+## At iterate    14  f =       94.108  |proj g|=        0.1628
+## At iterate    15  f =        93.94  |proj g|=        0.1182
+## At iterate    16  f =       93.879  |proj g|=       0.10304
+## At iterate    17  f =       93.865  |proj g|=       0.90921
+## At iterate    18  f =       93.861  |proj g|=       0.09468
+## At iterate    19  f =       93.861  |proj g|=      0.044205
+## At iterate    20  f =       93.861  |proj g|=     0.0025511
+## At iterate    21  f =       93.861  |proj g|=      0.002551
+## 
+## iterations 21
+## function evaluations 26
+## segments explored during Cauchy searches 23
+## BFGS updates skipped 0
+## active bounds at final generalized Cauchy point 0
+## norm of the final projected gradient 0.00255102
+## final function value 93.8608
+## 
+## F = 93.8608
+## final  value 93.860800 
+## converged
+```
+
+```r
+kriging_m1
+```
+
+```
+## 
+## Call:
+## km(formula = response ~ similar_desired + number, design = lhs_design[, 
+##     c(1, 2)], response = lhs_design[, 3], nugget.estim = T)
+## 
+## Trend  coeff.:
+##                   Estimate
+##     (Intercept)    80.0015
+## similar_desired    -0.0115
+##          number    -0.0044
+## 
+## Covar. type  : matern5_2 
+## Covar. coeff.:
+##                          Estimate
+## theta(similar_desired)    11.9056
+##          theta(number)  1550.6192
+## 
+## Variance estimate: 215.5
+## 
+## Nugget effect estimate: 21.98
+```
+
+The dice kriging command fits a kriging model, so that data point estimates are the sum of a linear trend and deviations from this trend drawn from a gaussian process.
+
+The trend coefficients are the first elements of the output, and include and intercept and a linear term for each parameter. The output also tells us that the a matern5_2 kernel was used - which defines the shape of the covariance function. Other kernels are available - experiment with them if you wish.  It also gives us the estimates of the correllation parameters (here 'theta'), and the variance and nugget effects. 
+
+The nugget effect here accounts for simulation stochasticity, while the variance parameter refers to input related variance. 
+
+We can make predictions for new values using the predict command. Lets make predictions across the whole parameter space. 
+
+
+```r
+similar_ins<-seq(0,100,2)
+number_ins<-seq(500,2500,50)
+
+fullSpace<- data.frame(expand.grid(similar_ins, number_ins))
+dim(fullSpace)
+```
+
+```
+## [1] 2091    2
+```
+
+```r
+#lots of points!
+
+colnames(fullSpace)<-colnames(lhs_design[,1:2])
+
+
+predictions<-predict(kriging_m1, fullSpace, "UK")
+
+prediction.surface<-matrix(predictions$mean, 51)
+
+filled.contour(similar_ins, number_ins, prediction.surface )
+```
+
+![plot of chunk unnamed-chunk-27](figure/unnamed-chunk-27.png) 
+
+Try constructing the same plot for predictions from the quadratic model.
+What do you notice? 
+
+
+## Gaussian Process Models with GEM-SA
+We can also try fitting the same model in the software GEM-SA.
+This is available as a stand-alone application here: [http://ctcd.group.shef.ac.uk/gem.html](http://ctcd.group.shef.ac.uk/gem.html)
+
+To use the software, we first of all need to save our simulation inputs and results in a format that can be read by the simulation .
+
+
+
+
+```r
+#set your working directory somewhere sensible so you can find these files later!
+write.table(lhs_design[,1:2], file="inputs.txt",row.names=F, col.names=F)
+write.table(lhs_design[,3], file="outputs.txt",row.names=F, col.names=F)
+```
+
+Now open GEM-SA. 
+
+1. From the menu, choose the 'Project / new ' option.  
+
+2. Next, in the resulting dialogue box, pick the inputs file you have just saved from the browse menu.  
+
+3. Similarly, browse to your outputs file. Leave predictions blank for the moment.  
+
+4. Now, click on the options tab. We have two inputs, so input '2' in the number of inputs box. You can name them appropriately if you wish by pressing the 'Names' button.     
+
+5. Tick the 'code has numerical error' box. In our language, this means that we have a simulation stochasticity, and we want GEM-SA to estimate a nugget term.  
+
+6. Under the Input uncertainty options, check the All unknown, product normal option.
+This states that we do not know for certain the true values of the parameters in questions, but we expect them to be jointly normal.  
+
+7. Don't worry about the simulations tab - this refers only to the MCMC parameter estimation procedure.  
+
+8. Press OK. You will be prompted to enter prior means and variance for your input variables. Press the 'use default' button to set use empirical estimated parameters based on the input values we have given GEM-SA.  
+
+9. We're ready to go. Press the red play button at the top of the window!  
+
+#Output Analysis
+You should be able to see some plots of the main effects for our two variables. 
+If you go to the sensitivity analysis tab, you will a variance based sensitivity analysis - this takes into account the non-parametric deviations from the linear trend that were unable to capture with our ANOVA earlier in the workshop.   
+
+In the 'Output summary' tab, you should be able to see the variance (sigma-squared) and nugget parameters, and roughness parameters which we also estimated using DiceKriging.  
+
+
+At the bottom of the screen, you can also see the mean expected of the simulation output **given the distributions of our inputs**, and the variance of this expectation.
+The final value is the total expected variance of the output, again given our input priors.   
+
+
+Try changing some of the other options (click on the pen to get back to the options screen). In particular, ask GEM-SA to calculate joint effects, and also attempt to validate the emulator accuracy using leave one out validation - the root mean standardised error should ideally be less than two.  
+
+
+One can also try examining how changes in the prior distributions impact upon the sensitivity and uncertainty analyses. Does this fit with your expectations?   
+
+
+
 
 
 
@@ -483,13 +882,8 @@ A number of R packages might be able to help you in designing and analysing comp
 6. 'rsm' : Response surface methodology package.
 
 ##Other Software
-1. Gaussian Process Matlab packages : Algorithms relating to the Rasmussen and Williams excellent book on Gaussian processes. Cutting edge. 
-2. GEM-SA :  Marc Kennedy's stand-alone gui for Gaussian Processes.
-
-
-
-```r
-#NLQuit()
-```
-
+1. Gaussian Process Matlab packages : Algorithms relating to the Rasmussen and Williams excellent book on Gaussian Processes for Machine learning. Both book and software available free online here:
+[http://www.gaussianprocess.org/](http://www.gaussianprocess.org/)
+Cutting edge. 
+2. GEM-SA :  Marc Kennedy's stand-alone gui for Gaussian Processes. Works very well, but is opaque and difficult to integrate with R. 
 

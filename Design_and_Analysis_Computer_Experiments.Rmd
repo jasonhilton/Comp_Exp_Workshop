@@ -1,17 +1,24 @@
 ---
+title: "Design and Analysis of Computer Experiments"
+author: "Jason Hilton and Jakub Bijak, University of Southampton"
+date: "Tuesday, October 28, 2014"
 output: html_document
 ---
+
+<!---
 Design and Analysis of Computer Experiments
 ========================================================
 
 
+
 **Jason Hilton and Jakub Bijak** - University of Southampton 
+-->
 
 Workshop given for IDEM 112 'Agent-based modelling and simulation'  
 Part of the MPIDR [International Advanced Studies in Demography series](http://www.demogr.mpg.de/en/education_career/international_advanced_studies_in_demography_3279/default.htm)
 
 Location: Max Planck Institute for Demographic Research, Rostock  
-Date: 30^th^ October 2014
+Date: 30<sup>th<\sup> October 2014
 
 ***
 
@@ -24,9 +31,11 @@ All files and supporting information are available on the github page [https://g
 I shall try to keep the R code is clear as possible throughout, and include comments and explanations in the text, but remember that you can use the '?' command to access the R help for any command if necessary.
 Try this for the *lapply* is you are not already familiar with it. 
 
-This workshop leans heavily on ideas from 
-Managing Uncertainty in Complex Models Toolkit (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html)
-Santer, W., Williams, B, and Notz, W (2003)  *'Design and Analysis of Computer Experiements'*, Springer
+This workshop leans heavily on ideas from  
+Managing Uncertainty in Complex Models Toolkit (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html) 
+
+Santer, W., Williams, B, and Notz, W (2003)  *'Design and Analysis of Computer Experiements'*, Springer  
+
 
 We are also using fewer simulation runs than we might generally wish for. This is largely because we want you to spend more time trying out the various methods, and less time waiting for simulations to finish running!
 
@@ -36,7 +45,7 @@ We are also using fewer simulation runs than we might generally wish for. This i
 We will start by running some very simple experiments to examine some of the ideas discussed in the lecture. 
 
 We will run netlogo through R using the RNetLogo Library, which you are all familiar with. 
-You will need to edit the nl.path variable to point to the folder where netlogo is installed on your machine.
+You will need to edit the 'nl.path' variable to point to the folder where netlogo is installed on your machine.
 
 Notice the 'gui' option has been set to false throughout this workshop, as running in 'headless' mode results in quicker runs. The gui is great for development, debugging and demonstration, but not necessarily much use for 'production' runs (ie, those required to produce your results).
 
@@ -112,7 +121,6 @@ Similarly, we can hold '%-similar-desired' steady, and vary only the number of a
   global_similar2<-sapply(X=number_range, runModel, similar = similar_desired)
   plot(number_range, global_similar2, 
        main = paste("Response by number of agents. %-similar-wanted = ", similar_desired ))
-
 ```
 
 Here it seems as though increasing the number of agents decreases segregation, although note the scale on the y-axis.
@@ -173,7 +181,7 @@ filled.contour(unique(fact_design$similar_desired),
       cex.main=0.9)
 ```
 
-With both these methods, we have to be carefull to realise that the plot algorithms are interpolating between the points we have observed using a simple (meta)model.
+With both these methods, we have to be carefull to realise that the plot algorithms are interpolating between the points we have observed using a simple (meta)model. Also note that the surface is pretty uneven. This is because we are dealling with a *stochastic simulator*, so the unevenness is likely to be attributible to random noise from NetLogo's random number generator. We will talk more about randomness in the part 2 of this workshop. 
 
 
 # Response surfaces
@@ -206,7 +214,7 @@ summary(model1)
 ```
 
 This is not a good fit to the data, which is unsurprising given we observed significant curvature in our reponse surface, which can not be captured by linear terms in our model
-This lack of fit can clearly be identified by plotting the standardised residuals against the similar desired input.
+Problems with this model can clearly be identified by plotting the standardised residuals against the similar desired input - we would hope that there is no pattern to these residuals.
 
 ```{r}
 plot(trans_design$similar_desired, rstandard(model1))
@@ -222,9 +230,8 @@ model2<- with(trans_design,
 summary(model2)
 
 ```
-This model is a much better fit to the data, as can be seen from the r^2^ coefficients.
+This model is a much better fit to the data, as can be seen from the r<sup>2</sup> coefficients.
 The residuals are still not perfect, but are considerably better than before.
-
 
 ```{r}
 plot(trans_design$similar_desired, rstandard(model2))
@@ -259,7 +266,7 @@ RMSE/diff(range(trans_design$response))
 
 The normalised RMSE is the probably too high for this model. This is a metric for assessing the error of a prediction based on the root of the average squared error, divided by the range over which the training set response varies. Thus it can be considered a sort of percentage error.  
 
-This might be because of the low number of data-points, but more likely it is due to the inadequacy of model we fit. ABM simulation are often to non-linear to expect simple response surfaces such as the one fitted above to do a good job of 'standing in' for the simulation. However, fitting a response surface does help us to understand the way in which the model responds to different inputs.
+This might be because of the low number of data-points, but more likely it is due to the inadequacy of model we fit. ABM simulation are often too non-linear to expect simple response surfaces such as the one fitted above to do a good job of 'standing in' for the simulation. However, fitting a response surface does help us to understand the way in which the model responds to different inputs.
 
 
 The inadequacy of the model in prediction helps to motivate the non-parameteric methods such as kriging used in the next part of the workshop, where no specific functional form is assumed for the meta-model.
@@ -366,8 +373,8 @@ We need to rewrite our runModel function for the new simulation.
 
 ```{r}
 runModel<-function(density){
-  # function running the model for 50 ticks at inputs 'similar' and 'num' 
-  # returning the global proportion similar
+  # function running the model for 1000 ticks at input value 'density'
+  # returning the proportion of burned trees
   NLCommand("set density", density)
   NLCommand("setup")
   NLDoCommand(1000,"go")
@@ -375,8 +382,9 @@ runModel<-function(density){
 }
 ```
 
-Now lets run the simulation 50 times at the density 60 to start to examine what the output *distribution* looks like at this point. When we are doing this sort of experiment it is useful to check how long each set of run is going to take - otherwise we might be waiting for simulations that will never end.
-The function'*system.time*' is our friend in this context.
+Now lets run the simulation 50 times at the density 60 to start to examine what the output *distribution* looks like at this point. When we are doing this sort of experiment it is useful to check how long each set of runs is going to take - otherwise we might be waiting for simulations that will never end!  
+
+The function'*system.time*' is our friend in this context - look at the third column in the output, "elapsed time" to assess the time taken. When working on this yourself, try this with a small number of runs and mutliply up to get an idea of how long it should take for the desired number.
 
 ```{r}
 system.time( proportion_burned_60<-sapply(rep(60,50),runModel ))
@@ -422,33 +430,53 @@ invisible(parSapply(cl, rep(nl.path, n_processors), setupModel, model.path))
 Now that we have a parallel cluster set up, let's try a few more runs:
 
 ```{r}
+# run model using parSapply, and combine results with those from before.
 
-system.time(proportion_burned_50<-c( proportion_burned_50, parSapply(cl, rep(60,50), runModel)))
+system.time(
+  proportion_burned_60_par<-parSapply(cl, rep(60,100), runModel)
+  )
+
+proportion_burned_60<-c( proportion_burned_60,  proportion_burned_60_par)
 
 ```
-Hopefully that should have been quicker than the first time! If not this is probably due to the overhead associated with setting up the clusters. Note that if you are running this on a Mac or a LINUX based system such as Ubuntu, then you might be able to use the much simpler mclapply function (which, in my experience, is also faster).
+Hopefully you should notice that this took less time per run than before! We did twice as many runs this time, so we would hope the elapsed time is considerably less than twice the previous value. If not this is probably due to the overhead associated with sending information to different cores and putting it back together again. The more runs you are hoping to do, the more likely it is that you will be able to see benefits from parallelising your model runs.
+
+Note that if you are running this on a Mac or a LINUX based system such as Ubuntu, then you might be able to use the much simpler mclapply function (which, in my experience, is also faster).  
+
+Lets plot our outputs. We can also use the 'density' command to plot the smoothed continuous density of our observations.
 
 ```{r}
-hist(proportion_burned_50,breaks=15)
+hist(proportion_burned_60,breaks=15)
+plot(density(proportion_burned_60))
 
 ```
 
-We now have 100 runs, and we can see from the above histogram that the distribution is pretty irregular. Sometimes, just the mean of the output will not give you adequate information about the whole of the distribution. 
-Lets try and build up a picture of the uncertainty caused by simulation stochasticity across the rest of the parameter space. 
+We now have 150 runs, and we can see from the above histogram that the distribution is pretty irregular. Clearly, a normality assumption will not be appropriate in this case. 
+
+Try and build up a picture of the uncertainty caused by simulation stochasticity across the following values of density by running repeat trials at each value.
+There is no need to do 150 runs at each point given time constraints, however - try around 25.
 
 ```{r}
-stopCluster()
-
+densities<-seq(57,81,6)
 ```
 
 
 Next, let's assume we have some prior information about the density of a particular forest we are interested in. We want know, given our information, expressed as a *distribution* over possible density values, what the probability of various proportions of forest destruction is. 
 
-Our prior states that the desnity of the forest has a normal distribution with mean .56 and sd 0.05. Sample from this distribution using rnorm, and run the simulation at the sampled points. Plot the density of this output distribution. 
+Our prior states that the density of the forest has a normal distribution with mean .56 and sd 0.05. Sample from this distribution using rnorm, and run the simulation at the sampled points. Plot the density of this output distribution. 
 
 Now try the same exercise, but just hold the input steady at it's mean value, and examine the difference between the two distributions. 
 
 This is an example of incorporating the effect of *input uncertainty* into our output predictions. (Note this is NOT a case of Full Bayesian updating - we have not applied bayes rule to get a posterior, but used the prior and the model to induce a distribution on our output variable).
+
+```{r}
+# tidy up by closing NetLogo on each core, and stopping the cluster.
+clusterEvalQ(cl,NLQuit())
+stopCluster(cl)
+
+```
+
+
 
 # Kriging or Gaussian Processes
 
@@ -469,9 +497,11 @@ kriging_m1<-km(response~similar_desired + number, lhs_design[,c(1,2)], lhs_desig
 kriging_m1
 ```
 
-The dice kriging command fits a standard linear model - called the trend - but then also fits a gaussian process to the residuals. The output tells us that the a matern5_2 kernel was used - which define the shape of the covariance function. Other kernels are available - experiment with them if you wish.  It also gives us the estimates of the scaling parameters, and the variance and nugget effects. 
+The dice kriging command fits a kriging model, so that data point estimates are the sum of a linear trend and deviations from this trend drawn from a gaussian process.
 
-The nugget effect here accounts for simulation stochasticity, while the variance parameter refers to variance relating to the simulation inputs.
+The trend coefficients are the first elements of the output, and include and intercept and a linear term for each parameter. The output also tells us that the a matern5_2 kernel was used - which defines the shape of the covariance function. Other kernels are available - experiment with them if you wish.  It also gives us the estimates of the correllation parameters (here 'theta'), and the variance and nugget effects. 
+
+The nugget effect here accounts for simulation stochasticity, while the variance parameter refers to input related variance. 
 
 We can make predictions for new values using the predict command. Lets make predictions across the whole parameter space. 
 
@@ -479,12 +509,11 @@ We can make predictions for new values using the predict command. Lets make pred
 similar_ins<-seq(0,100,2)
 number_ins<-seq(500,2500,50)
 
-fullSpace<- data.frame(expand.grid(similar_ins, number_ins)
+fullSpace<- data.frame(expand.grid(similar_ins, number_ins))
 dim(fullSpace)
 #lots of points!
 
 colnames(fullSpace)<-colnames(lhs_design[,1:2])
-
 
 
 predictions<-predict(kriging_m1, fullSpace, "UK")
@@ -515,30 +544,42 @@ write.table(lhs_design[,3], file="outputs.txt",row.names=F, col.names=F)
 ```
 
 Now open GEM-SA. 
-1. From the menu, choose the 'Project / new ' option.
-2. Next, in the resulting dialogue box, pick the inputs file you have just saved from the browse menu,
-3. Similarly, browse to your outputs file. Leave predictions blank for the moment.
-4. Now, click on the options tab. We have two inputs, so input '2' in the number of inputs box. You can name them appropriately if you wish
-5. Tick the 'code has numerical error' box. In our language, this means that we have a simulation stochasticity, and we want GEM-SA to estimate a nugget term.
-6. Under the Input uncertainty options, check the All unknown, product normal option.
-This states that we do not know for certain the true values of the parameters in questions, but we expect them to be jointly normal.
-7. Don't worry about the simulations tab - this refers only to the MCMC parameter estimation procedure. 
-8. Press OK. You will be prompted to enter prior means and variance for your input variables. Press the 'use default' button to set use empirical estimated parameters based on the input values we have given GEM-SA.
-9. We're ready to go. Press the red play button at the top of the window!
 
+1. From the menu, choose the 'Project / new ' option.  
+
+2. Next, in the resulting dialogue box, pick the inputs file you have just saved from the browse menu.  
+
+3. Similarly, browse to your outputs file. Leave predictions blank for the moment.  
+
+4. Now, click on the options tab. We have two inputs, so input '2' in the number of inputs box. You can name them appropriately if you wish by pressing the 'Names' button.     
+
+5. Tick the 'code has numerical error' box. In our language, this means that we have a simulation stochasticity, and we want GEM-SA to estimate a nugget term.  
+
+6. Under the Input uncertainty options, check the All unknown, product normal option.
+This states that we do not know for certain the true values of the parameters in questions, but we expect them to be jointly normal.  
+
+7. Don't worry about the simulations tab - this refers only to the MCMC parameter estimation procedure.  
+
+8. Press OK. You will be prompted to enter prior means and variance for your input variables. Press the 'use default' button to set use empirical estimated parameters based on the input values we have given GEM-SA.  
+
+9. We're ready to go. Press the red play button at the top of the window!  
 
 #Output Analysis
 You should be able to see some plots of the main effects for our two variables. 
 If you go to the sensitivity analysis tab, you will a variance based sensitivity analysis - this takes into account the non-parametric deviations from the linear trend that were unable to capture with our ANOVA earlier in the workshop.   
 
-In the 'Output summary' tab, you should be able to see the variance (sigma-squared) and nugget parameters, and roughness parameters which we also estimated using DiceKriging.
+In the 'Output summary' tab, you should be able to see the variance (sigma-squared) and nugget parameters, and roughness parameters which we also estimated using DiceKriging.  
+
 
 At the bottom of the screen, you can also see the mean expected of the simulation output **given the distributions of our inputs**, and the variance of this expectation.
-The final value is the total expected variance of the output, again given our input priors. 
+The final value is the total expected variance of the output, again given our input priors.   
 
-Try changing some of the other options (click on the pen to get back to the options screen). In particular, ask GEM-SA to calculate joint effects, and also attempt to validate the emulator accuracy using leave one out validation - the root mean standardised error should ideally be less than two. 
 
-One can also try examining how changes in the prior distributions impact upon the sensitivity and uncertainty analyses. Does this fit with your expectations? 
+Try changing some of the other options (click on the pen to get back to the options screen). In particular, ask GEM-SA to calculate joint effects, and also attempt to validate the emulator accuracy using leave one out validation - the root mean standardised error should ideally be less than two.  
+
+
+One can also try examining how changes in the prior distributions impact upon the sensitivity and uncertainty analyses. Does this fit with your expectations?   
+
 
 
 
@@ -561,11 +602,4 @@ A number of R packages might be able to help you in designing and analysing comp
 [http://www.gaussianprocess.org/](http://www.gaussianprocess.org/)
 Cutting edge. 
 2. GEM-SA :  Marc Kennedy's stand-alone gui for Gaussian Processes. Works very well, but is opaque and difficult to integrate with R. 
-
-
-```{r}
-#NLQuit()
-
-```
-
 
