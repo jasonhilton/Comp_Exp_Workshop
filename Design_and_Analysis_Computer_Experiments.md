@@ -503,6 +503,7 @@ In the first part of this workshop we have paid very little attention to the unc
 
 ## Assessing uncertainty using Monte Carlo
 We will start by working with the forest fire model, again from the NetLogo model library. This model display displays a lot of stochasticity in outputs, and so is a good target for uncertainty analysis. 
+(Credit to the MPIDR ABM group who I think first mentioned this model to me). 
 
 It models the spread of fire through a forest. It has only one parameter - the density of the trees in the forest in question. The simulation introduces fire to the edge of the fire, and lets it spread to any nearby trees. We are examining the proportion of burnt trees as an output. 
 
