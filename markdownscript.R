@@ -4,6 +4,8 @@ library(knitr)
 
 
 knit("master_Design_and_Analysis_Computer_Experiments.Rmd")
+
+render("master_Design_and_Analysis_Computer_Experiments.md", pdf_document())
 knit("apply_basics.Rmd")
 
 library(rmarkdown)
