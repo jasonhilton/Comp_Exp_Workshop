@@ -13,7 +13,7 @@ Workshop given for IDEM 112 'Agent-based modelling and simulation'
 Part of the MPIDR [International Advanced Studies in Demography series](http://www.demogr.mpg.de/en/education_career/international_advanced_studies_in_demography_3279/default.htm)
 
 Location: Max Planck Institute for Demographic Research, Rostock  
-Date: 30<sup>th</sup> October 2014
+Date: 26<sup>th</sup> October 2015
 
 ***
 
@@ -54,7 +54,7 @@ Notice the 'gui' option has been set to false throughout this workshop, as runni
 library(RNetLogo)
 
 ### CHANGE THIS PATH if necessary ###
-nl.path <- "C:\\Program Files (x86)\\NetLogo 5.0.4"
+nl.path <- "C:\\Program Files (x86)\\NetLogo 5.2.1"
 NLStart(nl.path, gui=F)
 
 ```
@@ -71,12 +71,12 @@ NLLoadModel( paste(nl.path, model.path,sep="") )
 ```
 
 Recall, we are interested in how our model **inputs** map to outputs or **responses**.
-In this case we have two main inputs - the micro-level preference for similar agents, and the total number of agents present. Given the fixed grid size of 51x51 patches, this latter input can also be thought of as the population density of the area in question. The output is the average proportion of similar neighbours over all agents - a proxy for segregation. 
+In this case we have two main inputs - the micro-level preference for similar agents, and the spatial population density. Given the fixed grid size of 51x51 patches, this latter input can also be thought of as relating to the proportion of occupied patches. The output is the average proportion of similar neighbours over all agents - a proxy for segregation. 
 
 Let's run the simulation at one combination of inputs and print the output to the screen.
 ```{r}
 NLCommand("set %-similar-wanted 50")
-NLCommand("set number 1500")
+NLCommand("set density 58")
 NLCommand("setup")
 NLDoCommand(100, "go")
 NLReport("percent-similar")
@@ -91,13 +91,13 @@ We want to examine how this response varies over the parameter space. An obvious
 ```{r}
 # Our desired inputs - a sequence from 0 to 100 increasing by 10 for similar
 similar_desired_range <- seq(0, 100, 10)
-number <- 1500
+density <- 58
 
-runModel<-function(similar, num){
+runModel<-function(similar, den){
   # function running the model for 50 ticks at inputs 'similar' and 'num' 
   # returning the global proportion similar
   NLCommand("set %-similar-wanted", similar)
-  NLCommand("set number", num)
+  NLCommand("set density", den)
   NLCommand("setup")
   NLDoCommand(50, "go")
   return(NLReport("percent-similar"))
@@ -105,11 +105,11 @@ runModel<-function(similar, num){
 
 # Apply the function runModel to each value in similar_desired, 
 # holding number of agents constant at 'number', returning results as an array.
-global_similar <- sapply(similar_desired_range, runModel, num = number)
+global_similar <- sapply(similar_desired_range, runModel, den = density)
 
 # plot the results 
 plot(similar_desired_range, global_similar, 
-     main = paste("Response by values of '%-similar-desired',", number, "agents"))
+     main = paste("Response by values of '%-similar-desired', population density =", density, "%"))
 
 ```
 
@@ -118,18 +118,18 @@ By observation, it seems that segregation increases with micro-level preference 
 
 ### *Task*
 
-Try holding '%-similar-desired' steady, and vary only the number of agents in the simulation ( and by extension the population density).
-Keep %-similar desired at 50, and run the model at value between 500 and 2500, at increments of 250. Plot the results
+Try holding '%-similar-desired' steady, and vary only the population desired.
+Keep %-similar desired at 50, and run the model at values between 15% and 95%, at increments of 5%. Plot the results
 
 **A solution**  
 
 
 ```{r}
   similar_desired <- 50
-  number_range <- seq(500,2500,250)
-  global_similar2 <- sapply(X=number_range, runModel, similar = similar_desired)
-  plot(number_range, global_similar2, 
-       main = paste("Response by number of agents. %-similar-wanted = ", similar_desired ))
+  density_range <- seq(15,95,5)
+  global_similar2 <- sapply(X=density_range, runModel, similar = similar_desired)
+  plot(density_range, global_similar2, 
+       main = paste("Response by density of agents. %-similar-wanted = ", similar_desired ))
 ```
 
 The results should imply that the number of agents tends to decrease segregation, although note the scale on the y-axis.
@@ -142,8 +142,8 @@ We can see this by simply plotting our design:
 
 # this looks complicated I simply combine all inputs points we have already run into a single data frame, and plot them 
 design <- data.frame(
-  similar_desired = c( similar_desired_range, rep(50, 9)),
-  number = c(rep(number,length(similar_desired_range)), seq(500,2500,250)))
+  similar_desired = c( similar_desired_range, rep(50, length(seq(15,95,5)))),
+  density = c(rep(density,length(similar_desired_range)), seq(15,95,5)))
 
 plot(design)
 
@@ -154,13 +154,13 @@ We will use 5 levels (this may take a few moments to run)
 
 ```{r}
 # expand.grid creates an array with all combination of the two arguments given
-fact_design <- expand.grid(similar_desired=seq(0,100,25), number=seq(500,2500,500))
+fact_design <- expand.grid(similar_desired=seq(0,100,25), density = seq(20,98,19))
 
 # plot the design 
 plot(fact_design)
 
 # fun the model at these combinations, using mapply to iterate through pairs of inputs
-fact_response<-mapply(runModel, fact_design$similar_desired, fact_design$number)
+fact_response<-mapply(runModel, fact_design$similar_desired, fact_design$density)
 
 ```
 
@@ -171,11 +171,11 @@ We can plot this as a surface using the persp command:
 persp(
       # get the unique values of each input
       unique(fact_design$similar_desired),
-      unique(fact_design$number), 
+      unique(fact_design$density), 
       # create a matrix of the output values
       matrix(fact_response,nrow =5),
       xlab = "Similar Desired",
-      ylab = "Number of Agents",
+      ylab = "Density of Agents",
       zlab = "Response",
       # some parameters governing viewing angle
       theta = 220,
@@ -190,11 +190,11 @@ less tuning to find a good viewing angle.
 
 ```{r}
 filled.contour(unique(fact_design$similar_desired),
-      unique(fact_design$number), 
+      unique(fact_design$density), 
       matrix(fact_response,nrow=5),
       xlab = "Similar Desired",
-      ylab = "Number of Agents",
-      main = "Average % Neighbour Similar by % similar desired and number of agents",
+      ylab = "Density of Agents",
+      main = "Average % Neighbour Similar by % similar desired and density of agents",
       cex.main = 0.9)
 ```
 
@@ -228,7 +228,7 @@ We will start by fitting just a simple linear term for each input.
 
 ```{r simple lm}
 # we use the standard R linear model command. 
-model1<-with(trans_design, lm(response ~ similar_desired + number))
+model1<-with(trans_design, lm(response ~ similar_desired + density))
 summary(model1)
 
 ```
@@ -247,7 +247,7 @@ Let's try adding higher order terms, and an interaction term:
 ```{r}
 # Model with interaction and squared terms
 model2<- with(trans_design, 
-              lm( response ~ similar_desired * number + I (number**2) 
+              lm( response ~ similar_desired * density + I (density**2) 
                   + I(similar_desired**2)))
 summary(model2)
 
@@ -257,7 +257,7 @@ The residuals are still not perfect, but are considerably better than before.
 
 ```{r}
 plot(trans_design$similar_desired, rstandard(model2))
-plot(trans_design$number, rstandard(model2))
+plot(trans_design$density, rstandard(model2))
 qqnorm(rstandard(model2))
 qqline(rstandard(model2))
 ``` 
@@ -267,8 +267,8 @@ qqline(rstandard(model2))
 If we are to trust the results of meta-model, we need to confirm that it is a good fit for the underlying simulation. The best way of doing this is to run the simulation at new points, and compare these to the model predictions. 
 
 ```{r}
-new_points <- data.frame(similar_desired = runif(10, 0, 100), number = runif(10, 500, 2500))
-valid_response <- mapply(runModel, new_points$similar_desired, new_points$number)
+new_points <- data.frame(similar_desired = runif(10, 0, 100), density = runif(10, 20, 95))
+valid_response <- mapply(runModel, new_points$similar_desired, new_points$density)
 
 
 trans_new_points <- data.frame(mapply(transformInput, 
@@ -324,25 +324,25 @@ library(lhs)
 scaledDesign<-data.frame(improvedLHS(25,2))
 head(scaledDesign)
 
-colnames(scaledDesign)<-c("similar_desired", "number")
+colnames(scaledDesign)<-c("similar_desired", "density")
 
 lhs_design <- mapply(function(x,multiplier,location) (x*multiplier) + location, 
        scaledDesign,multipliers, locations  )
 
 plot(lhs_design)
 
-colnames(lhs_design)<-c("similar_desired", "number")
+colnames(lhs_design)<-c("similar_desired", "density")
 
 lhs_design<-data.frame(lhs_design)
 
-lhs_response<-mapply(runModel, lhs_design$similar_desired, lhs_design$number)
+lhs_response<-mapply(runModel, lhs_design$similar_desired, lhs_design$density)
 
 scaledDesign$response<-lhs_response
 
-model_lhs1<-with(scaledDesign, lm(response~similar_desired+ number))
+model_lhs1<-with(scaledDesign, lm(response~similar_desired+ density))
 
 model_lhs2<- with(scaledDesign, 
-              lm( response ~ similar_desired * number + I (number**2) 
+              lm( response ~ similar_desired * density + I (density**2) 
                   + I(similar_desired**2)))
 
 
@@ -501,7 +501,7 @@ densities<-seq(51, 81, 6)
 
 **A solution**
 ```{r}
-# make a vectore of the density points we want to run, including repeats
+# make a vector of the density points we want to run, including repeats
 densities_rep<-unlist(lapply(densities, rep, 25))
 # run the model for these densties
 proportion_burned <- parSapply(cl, densities_rep, runModel)
@@ -515,7 +515,7 @@ variances<-sapply(densities,
             function(den){
               var(fire_outputs$proportion_burned[fire_outputs$densities_rep==den ])
             }) 
-# NB a more elegant way to do this would be to use the plyr package. 
+
 
 plot(densities, variances, ylim=c(0,0.05))
 points(60, var(proportion_burned_60))
@@ -569,7 +569,7 @@ Use the LHS sample and associated response you created earlier to fit the model.
 lhs_design$response<-lhs_response
 library("DiceKriging")
 
-kriging_m1<-km(response~similar_desired + number, lhs_design[,c(1,2)], lhs_design[,3], nugget.estim=T)
+kriging_m1<-km(response~similar_desired + density, lhs_design[,c(1,2)], lhs_design[,3], nugget.estim=T)
 
 kriging_m1
 ```
@@ -584,9 +584,9 @@ We can make predictions for new values using the predict command. Lets make pred
 
 ```{r} 
 similar_ins<-seq(0,100,2)
-number_ins<-seq(500,2500,50)
+densities_ins<-seq(20,95,5)
 
-fullSpace<- data.frame(expand.grid(similar_ins, number_ins))
+fullSpace<- data.frame(expand.grid(similar_ins, densities_ins))
 dim(fullSpace)
 #lots of points!
 
@@ -597,7 +597,7 @@ predictions<-predict(kriging_m1, fullSpace, "UK")
 
 prediction.surface<-matrix(predictions$mean, 51)
 
-filled.contour(similar_ins, number_ins, prediction.surface )
+filled.contour(similar_ins, densities_ins, prediction.surface )
 
 ```
 
