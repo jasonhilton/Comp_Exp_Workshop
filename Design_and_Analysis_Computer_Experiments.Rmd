@@ -20,7 +20,7 @@ Date: 26<sup>th</sup> October 2015
 ***
 
 #Introduction 
-```{r setup}
+```{r setup, include =F}
 library(knitr)
 set.seed(12345)
 opts_chunk$set(cache=T)
@@ -314,7 +314,47 @@ How does the RMSE for the lhs design compare to the factorial design using the s
 - *Tip* : The function improvedLHS takes two arguments - the number of inputs to generate, and the number of dimensions.
 - *Tip* : It also produces a design scaled to between 0 and 1 You will need to scale it up again to lie in the range of the individual inputs before you run the model.
 
+```{r, include =F}
+library(lhs)
+scaledDesign<-data.frame(improvedLHS(25,2))
+head(scaledDesign)
 
+colnames(scaledDesign)<-c("similar_desired", "density")
+
+lhs_design <- mapply(function(x,multiplier,location) (x*multiplier) + location, 
+       scaledDesign,multipliers, locations  )
+
+plot(lhs_design)
+
+colnames(lhs_design)<-c("similar_desired", "density")
+
+lhs_design<-data.frame(lhs_design)
+
+lhs_response<-mapply(runModel, lhs_design$similar_desired, lhs_design$density)
+
+scaledDesign$response<-lhs_response
+
+model_lhs1<-with(scaledDesign, lm(response~similar_desired+ density))
+
+model_lhs2<- with(scaledDesign, 
+              lm( response ~ similar_desired * density + I (density**2) 
+                  + I(similar_desired**2)))
+
+
+
+model_predictions_lhs <- predict(model_lhs2, trans_new_points)
+
+error <- valid_response-model_predictions_lhs
+
+# Root Mean Squared Error
+RMSE_lhs <- sqrt(sum(error**2)/length(error))
+
+# 'Normalised' RMSE
+RMSE_lhs/diff(range(trans_design$response))
+
+RMSE/diff(range(trans_design$response))
+
+```
 
 The main advantage of LHS designs, however, is that you can get away with many fewer runs, particularly in higher dimensions, and when use in combined with kriging-type models.  
 

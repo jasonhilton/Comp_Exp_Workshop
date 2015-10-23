@@ -89,7 +89,7 @@ NLReport("percent-similar")
 ```
 
 ```
-## [1] 89.69374
+## [1] 88.60794
 ```
 
 Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of 58%, the average proportion of similar agents in a neighbourhood is around about 90%. 
@@ -265,19 +265,19 @@ summary(model1)
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -26.749 -11.343  -2.146  15.995  24.876 
+## -29.745 -12.029  -2.484  16.337  24.998 
 ## 
 ## Coefficients:
 ##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)       70.411      7.847   8.973 8.34e-09 ***
-## similar_desired   15.708      9.925   1.583    0.128    
-## density          -15.463      9.925  -1.558    0.134    
+## (Intercept)        72.47       7.91   9.161  5.8e-09 ***
+## similar_desired    14.93      10.01   1.492   0.1499    
+## density           -18.41      10.01  -1.840   0.0793 .  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 17.55 on 22 degrees of freedom
-## Multiple R-squared:  0.1831,	Adjusted R-squared:  0.1089 
-## F-statistic: 2.466 on 2 and 22 DF,  p-value: 0.1081
+## Residual standard error: 17.69 on 22 degrees of freedom
+## Multiple R-squared:  0.2033,	Adjusted R-squared:  0.1308 
+## F-statistic: 2.807 on 2 and 22 DF,  p-value: 0.08211
 ```
 
 This is not a good fit to the data, which is unsurprising given we observed significant curvature in our response surface. This curvature cannot be captured by linear terms in our model.
@@ -310,22 +310,22 @@ summary(model2)
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -15.914  -6.070   1.608   4.651  17.851 
+## -16.291  -7.061   1.431   5.794  16.929 
 ## 
 ## Coefficients:
 ##                         Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)               48.789      6.139   7.948 1.85e-07 ***
-## similar_desired          163.122     19.153   8.517 6.53e-08 ***
-## density                  -14.514     19.153  -0.758    0.458    
-## I(density^2)              11.357     17.046   0.666    0.513    
-## I(similar_desired^2)    -135.109     17.046  -7.926 1.92e-07 ***
-## similar_desired:density  -24.612     14.262  -1.726    0.101    
+## (Intercept)               52.332      6.344   8.249 1.06e-07 ***
+## similar_desired          161.072     19.795   8.137 1.30e-07 ***
+## density                  -25.902     19.795  -1.309    0.206    
+## I(density^2)              18.699     17.617   1.061    0.302    
+## I(similar_desired^2)    -134.932     17.617  -7.659 3.18e-07 ***
+## similar_desired:density  -22.422     14.739  -1.521    0.145    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 8.914 on 19 degrees of freedom
-## Multiple R-squared:  0.8179,	Adjusted R-squared:   0.77 
-## F-statistic: 17.07 on 5 and 19 DF,  p-value: 1.898e-06
+## Residual standard error: 9.212 on 19 degrees of freedom
+## Multiple R-squared:  0.8134,	Adjusted R-squared:  0.7642 
+## F-statistic: 16.56 on 5 and 19 DF,  p-value: 2.385e-06
 ```
 This model fits the data much better, and a higher proportion of variance is accounted for, as can be observed from the value of R<sup>2</sup>.
 The residuals are still not perfect, but are considerably better than before.
@@ -374,7 +374,7 @@ RMSE/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.2680665
+## [1] 0.3156477
 ```
 
 The normalised RMSE is probably too high for this model. The RMSE is a metric for assessing prediction error  based on the root of the average squared error, divided by the range over which the training set response varies. 
@@ -397,13 +397,13 @@ model_an["Sum Sq"]/sum(model_an["Sum Sq"])
 ```
 
 ```
-##                              Sum Sq
-## similar_desired         0.092995123
-## density                 0.090118576
-## I(density^2)            0.004254044
-## I(similar_desired^2)    0.602021786
-## similar_desired:density 0.028538429
-## Residuals               0.182072041
+##                             Sum Sq
+## similar_desired         0.08062908
+## density                 0.12264919
+## I(density^2)            0.01106766
+## I(similar_desired^2)    0.57627381
+## similar_desired:density 0.02273368
+## Residuals               0.18664657
 ```
 Note the percentages sum to one by construction. This indicates that the squared effect of similar-desired is the most significant in our model. This fits with our eyeball intuition, noting the curved nature of the response surface. 
 
@@ -430,12 +430,12 @@ head(scaledDesign)
 
 ```
 ##           X1         X2
-## 1 0.53860060 0.44907790
-## 2 0.23626526 0.99888372
-## 3 0.59833020 0.06190773
-## 4 0.71938855 0.65394090
-## 5 0.37504411 0.09681160
-## 6 0.05130453 0.28266080
+## 1 0.04334753 0.16154782
+## 2 0.44423610 0.08624234
+## 3 0.49748943 0.93471743
+## 4 0.93600643 0.70586596
+## 5 0.91083404 0.49267803
+## 6 0.74530839 0.63429300
 ```
 
 ```r
@@ -478,7 +478,7 @@ RMSE_lhs/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.245821
+## [1] 0.2132203
 ```
 
 ```r
@@ -486,7 +486,7 @@ RMSE/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.2680665
+## [1] 0.3156477
 ```
 
 
@@ -531,10 +531,10 @@ for (i in 1:4){
 ```
 
 ```
-## [1] 0.6857105
-## [1] 0.7951046
-## [1] 0.5989842
-## [1] 0.6191617
+## [1] 0.528783
+## [1] 0.7445916
+## [1] 0.7808464
+## [1] 0.6817882
 ```
 
 
@@ -563,7 +563,7 @@ system.time( proportion_burned_60 <- sapply(rep(60, 50), runModel ))
 
 ```
 ##    user  system elapsed 
-##   62.22    0.70   62.37
+##   61.70    1.30   62.65
 ```
 
 ```r
@@ -631,7 +631,7 @@ system.time(
 
 ```
 ##    user  system elapsed 
-##    0.00    0.00   51.03
+##    0.97    1.15   53.17
 ```
 
 ```r
@@ -661,7 +661,7 @@ var(proportion_burned_60)
 ```
 
 ```
-## [1] 0.03132281
+## [1] 0.02594687
 ```
 
 We now have 150 runs, and we can see from the above histogram that the distribution is pretty irregular. Clearly, a normality assumption will not be appropriate in this case. 
@@ -800,46 +800,41 @@ kriging_m1<-km(response~similar_desired + density, lhs_design[,c(1,2)], lhs_desi
 ##   - type :  matern5_2 
 ##   - nugget : unknown homogenous nugget effect 
 ##   - parameters lower bounds :  1e-10 1e-10 
-##   - parameters upper bounds :  193.2799 146.0882 
+##   - parameters upper bounds :  193.2312 145.7616 
 ##   - upper bound for alpha   :  1 
-##   - best initial criterion value(s) :  -94.97322 
+##   - best initial criterion value(s) :  -90.65762 
 ## 
 ## N = 3, M = 5 machine precision = 2.22045e-16
 ## At X0, 0 variables are exactly at the bounds
-## At iterate     0  f=       94.973  |proj g|=      0.97919
-## At iterate     1  f =       94.972  |proj g|=       0.12659
-## At iterate     2  f =       94.971  |proj g|=       0.12521
-## At iterate     3  f =       94.971  |proj g|=       0.12507
-## At iterate     4  f =       94.971  |proj g|=       0.12502
-## At iterate     5  f =       94.971  |proj g|=       0.40156
-## At iterate     6  f =       94.971  |proj g|=       0.80472
-## At iterate     7  f =        94.97  |proj g|=       0.97854
-## At iterate     8  f =       94.969  |proj g|=       0.97898
-## At iterate     9  f =       94.966  |proj g|=       0.97968
-## At iterate    10  f =       94.958  |proj g|=       0.98074
-## At iterate    11  f =       94.933  |proj g|=       0.98231
-## At iterate    12  f =        94.86  |proj g|=       0.98446
-## At iterate    13  f =       94.618  |proj g|=       0.98702
-## At iterate    14  f =       93.634  |proj g|=       0.98885
-## At iterate    15  f =        85.91  |proj g|=      0.023041
-## At iterate    16  f =       85.909  |proj g|=      0.023177
-## At iterate    17  f =       85.704  |proj g|=      0.026841
-## At iterate    18  f =       85.681  |proj g|=       0.02872
-## At iterate    19  f =        85.68  |proj g|=       0.99591
-## At iterate    20  f =        85.68  |proj g|=      0.028723
-## At iterate    21  f =        85.68  |proj g|=      0.028776
-## At iterate    22  f =        85.68  |proj g|=      0.028777
+## At iterate     0  f=       90.658  |proj g|=      0.22357
+## At iterate     1  f =       89.916  |proj g|=       0.20514
+## At iterate     2  f =       89.573  |proj g|=       0.19505
+## At iterate     3  f =       89.469  |proj g|=       0.19447
+## At iterate     4  f =       89.467  |proj g|=         0.993
+## At iterate     5  f =       89.466  |proj g|=       0.99261
+## At iterate     6  f =       89.464  |proj g|=       0.19532
+## At iterate     7  f =       89.453  |proj g|=        0.1947
+## At iterate     8  f =       89.426  |proj g|=       0.19492
+## At iterate     9  f =       89.351  |proj g|=        0.1979
+## At iterate    10  f =       89.139  |proj g|=       0.20886
+## At iterate    11  f =       81.459  |proj g|=       0.10257
+## At iterate    12  f =        78.22  |proj g|=       0.98264
+## At iterate    13  f =         78.2  |proj g|=       0.98442
+## At iterate    14  f =       78.187  |proj g|=      0.016989
+## At iterate    15  f =       78.187  |proj g|=      0.016921
+## At iterate    16  f =       78.187  |proj g|=     0.0093073
+## At iterate    17  f =       78.187  |proj g|=      0.013392
 ## 
-## iterations 22
-## function evaluations 34
-## segments explored during Cauchy searches 24
+## iterations 17
+## function evaluations 32
+## segments explored during Cauchy searches 20
 ## BFGS updates skipped 0
 ## active bounds at final generalized Cauchy point 0
-## norm of the final projected gradient 0.0287773
-## final function value 85.6796
+## norm of the final projected gradient 0.0133921
+## final function value 78.1873
 ## 
-## F = 85.6796
-## final  value 85.679597 
+## F = 78.1873
+## final  value 78.187303 
 ## converged
 ```
 
@@ -855,19 +850,19 @@ kriging_m1
 ## 
 ## Trend  coeff.:
 ##                   Estimate
-##     (Intercept)    84.1039
-## similar_desired     0.0321
-##         density    -0.2638
+##     (Intercept)    83.4767
+## similar_desired     0.0238
+##         density    -0.2212
 ## 
 ## Covar. type  : matern5_2 
 ## Covar. coeff.:
 ##                          Estimate
-## theta(similar_desired)    12.0022
-##         theta(density)    91.7974
+## theta(similar_desired)    17.7635
+##         theta(density)   123.0492
 ## 
-## Variance estimate: 257.6181
+## Variance estimate: 205.7079
 ## 
-## Nugget effect estimate: 1.079988
+## Nugget effect estimate: 3.537085
 ```
 
 The dice kriging command fits a kriging model, so that data point estimates are the sum of a linear trend and deviations from this trend drawn from a Gaussian process.
