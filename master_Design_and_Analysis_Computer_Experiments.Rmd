@@ -20,10 +20,12 @@ Date: 26<sup>th</sup> October 2015
 ***
 
 #Introduction 
-```{r setup}
+```{r setup, include=F}
 library(knitr)
+
 set.seed(12345)
-opts_chunk$set(cache=T)
+opts_chunk$set(cache=F)
+
 ```
 
 
