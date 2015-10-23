@@ -1,5 +1,7 @@
 ---
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 
@@ -9,7 +11,7 @@ Design and Analysis of Computer Experiments
 **Jason Hilton and Jakub Bijak** - University of Southampton 
 
 
-Workshop given for IDEM 112 'Agent-based modelling and simulation'  
+Workshop given for IDEM 112 'A stochastic process approach to agent-based modeling and simulation'  
 Part of the MPIDR [International Advanced Studies in Demography series](http://www.demogr.mpg.de/en/education_career/international_advanced_studies_in_demography_3279/default.htm)
 
 Location: Max Planck Institute for Demographic Research, Rostock  
@@ -18,6 +20,12 @@ Date: 26<sup>th</sup> October 2015
 ***
 
 #Introduction 
+```{r setup}
+library(knitr)
+set.seed(12345)
+opts_chunk$set(cache=T)
+```
+
 
 In this workshop, we shall work through examples of a number of the techniques discussed in the preceding lectures. 
 
@@ -38,14 +46,14 @@ This workshop leans heavily on ideas from:
 
 We are also using fewer simulation runs than we might generally wish for. This is largely because we want you to spend more time trying out the various methods, and less time waiting for simulations to finish running!
 
-I suggest working through the examples below, executing the code yourself at each stage. There are few several tasks throughout the workshop for you to try yourself. Solutions are available for some of these if you get stuck.
+I suggest working through the examples below, executing the code yourself at each stage. There are several tasks throughout the workshop for you to try yourself. Solutions are available for some of these if you get stuck.
 
 #Part 1: Experimental Designs and Simple Metamodels  
 
 ## A First Experiment  
 We will start by running some very simple experiments to examine some of the ideas discussed in the lecture. 
 
-We will run NetLogo through R using the RNetLogo Library, which you are all familiar with. 
+We will run NetLogo through R using the RNetLogo Library, which you may be familiar with. 
 You will need to edit the 'nl.path' variable to point to the folder where NetLogo is installed on your machine.
 
 Notice the 'gui' option has been set to false throughout this workshop, as running in 'headless' mode results in quicker runs. The gui is great for development, debugging and demonstration, but not necessarily much use for 'production' runs (ie, those required to produce your results).
@@ -82,7 +90,7 @@ NLDoCommand(100, "go")
 NLReport("percent-similar")
 ```
 
-Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of 1500 / 51 ^ 2 = `r 1500/51**2`, the average proportion of similar agents in a neighbourhood is around about 90%. 
+Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of 58%, the average proportion of similar agents in a neighbourhood is around about 90%. 
 
 ##Exploring the Parameter Space
 
@@ -94,7 +102,7 @@ similar_desired_range <- seq(0, 100, 10)
 density <- 58
 
 runModel<-function(similar, den){
-  # function running the model for 50 ticks at inputs 'similar' and 'num' 
+  # function running the model for 50 ticks at inputs 'similar' and 'density' 
   # returning the global proportion similar
   NLCommand("set %-similar-wanted", similar)
   NLCommand("set density", den)
@@ -104,7 +112,7 @@ runModel<-function(similar, den){
 }
 
 # Apply the function runModel to each value in similar_desired, 
-# holding number of agents constant at 'number', returning results as an array.
+# holding population density constant at the value of 'density', returning results as an array.
 global_similar <- sapply(similar_desired_range, runModel, den = density)
 
 # plot the results 
@@ -118,7 +126,7 @@ By observation, it seems that segregation increases with micro-level preference 
 
 ### *Task*
 
-Try holding '%-similar-desired' steady, and vary only the population desired.
+Try holding '%-similar-desired' steady, and vary only the population density.
 Keep %-similar desired at 50, and run the model at values between 15% and 95%, at increments of 5%. Plot the results
 
 **A solution**  
@@ -132,7 +140,7 @@ Keep %-similar desired at 50, and run the model at values between 15% and 95%, a
        main = paste("Response by density of agents. %-similar-wanted = ", similar_desired ))
 ```
 
-The results should imply that the number of agents tends to decrease segregation, although note the scale on the y-axis.
+The results should imply that increasing the density of agents tends to decrease segregation, although note the scale on the y-axis.
 
 By holding the one parameter fixed while varying the other, we are preventing ourselves from identifying any interaction between the variables, and leaving large areas of the parameter space unobserved. 
 
@@ -140,7 +148,7 @@ We can see this by simply plotting our design:
 
 ```{r}
 
-# this looks complicated I simply combine all inputs points we have already run into a single data frame, and plot them 
+# this looks complicated, but I simply combine all inputs points we have already run into a single data frame, and plot them 
 design <- data.frame(
   similar_desired = c( similar_desired_range, rep(50, length(seq(15,95,5)))),
   density = c(rep(density,length(similar_desired_range)), seq(15,95,5)))
@@ -213,8 +221,8 @@ transformInput <- function(input, location, multiplier){
 }
 
 # we need to save these values for later transformations.
-locations<-apply(fact_design,2,min)
-multipliers<-apply(fact_design,2,max)- locations
+locations <- apply(fact_design,2,min)
+multipliers <- apply(fact_design,2,max)- locations
 
 # do the transformation by applying the transformInput function
 trans_design<-data.frame(mapply(transformInput, fact_design, locations, multipliers))
@@ -318,7 +326,8 @@ How does the RMSE for the lhs design compare to the factorial design using the s
 - *Tip* : It also produces a design scaled to between 0 and 1 You will need to scale it up again to lie in the range of the individual inputs before you run the model.
 
 
-* A Solution* 
+
+*A Solution* 
 ```{r}
 library(lhs)
 scaledDesign<-data.frame(improvedLHS(25,2))
@@ -474,11 +483,11 @@ system.time(
 proportion_burned_60 <- c( proportion_burned_60,  proportion_burned_60_par)
 
 ```
-Hopefully you should notice that this took less time per run than before! We did twice as many runs this time, so we would hope the elapsed time is considerably less than twice the previous value. If not this is probably due to the overhead associated with sending information to different cores and putting it back together again. The more runs you are hoping to do, the more likely it is that you will be able to see benefits from parallelising your model runs.
+Hopefully you should notice that this took less time per run than before! We did twice as many runs this time, so we would hope the elapsed time is considerably less than twice the previous value. If not, this is probably due to the overhead associated with sending information to different cores and putting it back together again. The more runs you are hoping to do, the more likely it is that you will be able to see benefits from parallelising your model runs.
 
 Note that if you are running this on a Mac or a LINUX based system such as Ubuntu, then you might be able to use the much simpler mclapply function (which, in my experience, is also faster).  
 
-Lets plot our outputs. We can also use the 'density' command to plot the smoothed continuous density of our observations.
+Let's plot our outputs. We can also use the 'density' command to plot the smoothed continuous density of our observations.
 
 ```{r}
 hist(proportion_burned_60,breaks = 15)
@@ -561,7 +570,7 @@ stopCluster(cl)
 
 Here we will go back to our Schelling model and fit two different kriging models. 
 
-We will start by examining the DiceKriging package, which you will need to install from CRAN. This package uses the km command to create a kriging model object in the same way as the lm linear model command.
+We will start by examining the `DiceKriging` package, which you will need to install from CRAN. This package uses the `km` command to create a kriging model object in the same way as the `lm` linear model command.
 
 Use the LHS sample and associated response you created earlier to fit the model.
 
@@ -576,7 +585,7 @@ kriging_m1
 
 The dice kriging command fits a kriging model, so that data point estimates are the sum of a linear trend and deviations from this trend drawn from a Gaussian process.
 
-The trend coefficients are the first elements of the output, and include an intercept and a linear term for each parameter. The output also tells us that the a matern5_2 kernel was used - which defines the shape of the covariance function. Other kernels are available - experiment with them if you wish.  It also gives us the estimates of the correllation parameters (here 'theta'), and the variance and nugget effects. 
+The trend coefficients are the first elements of the output, and include an intercept and a linear term for each parameter. The output also tells us that the a matern5_2 kernel was used - which defines the shape of the covariance function. Other kernels are available - experiment with them if you wish.  It also gives us the estimates of the correlation parameters (here 'theta'), and the variance and nugget effects. 
 
 The nugget effect here accounts for simulation stochasticity, while the variance parameter refers to input related variance. 
 
@@ -607,7 +616,7 @@ What do you notice?
 
 
 ## Gaussian Process Models with GEM-SA
-We can also try fitting the same model in the software GEM-SA (with kind thanks to Marc Kennedy for a kind permission).
+We can also try fitting the same model in the software GEM-SA (with kind thanks to Marc Kennedy for permission).
 This is available as a stand-alone application here: [http://ctcd.group.shef.ac.uk/gem.html](http://ctcd.group.shef.ac.uk/gem.html)
 
 To use the software, we first of all need to save our simulation inputs and results in a format that can be read by the software.
@@ -628,6 +637,7 @@ Now open GEM-SA.
 2. Next, in the resulting dialogue box, pick the inputs file you have just saved from the browse menu.  
 
 3. Similarly, browse to your outputs file. Leave predictions blank for the moment.  
+![gemsa1](figure/gemsa1.png) 
 
 4. Now, click on the options tab. We have two inputs, so input '2' in the number of inputs box. You can name them appropriately if you wish by pressing the 'Names' button.     
 
@@ -635,6 +645,7 @@ Now open GEM-SA.
 
 6. Under the Input uncertainty options, check the All unknown, product normal option.
 This states that we do not know for certain the true values of the parameters in questions, but we expect them to be jointly normal.  
+![gemsa2](figure/gemsa2.png) 
 
 7. Don't worry about the simulations tab - this refers only to the MCMC parameter estimation procedure.  
 
@@ -681,9 +692,10 @@ Cutting edge.
 
 **Managing Uncertainty in Complex Models Toolkit** (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html) 
 
-**Santer, W., Williams, B, and Notz, W** (2003)  *'Design and Analysis of Computer Experiements'*, Springer  
+**Santer, W., Williams, B, and Notz, W** (2003)  *'Design and Analysis of Computer Experiments'*, Springer  
 
 ##Model Citations
 Wilensky, U. (1997). NetLogo Segregation model. http://ccl.northwestern.edu/netlogo/models/Segregation. Center for Connected Learning and Computer-Based Modeling, Northwestern Institute on Complex Systems, Northwestern University, Evanston, IL.
 
+Wilensky, U. (1997). NetLogo Fire model. http://ccl.northwestern.edu/netlogo/models/Fire. Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
 

@@ -118,7 +118,7 @@ geom_mean2<-function(input, constant){
 }
 ```
 
-We can use apply again to but specifiy the value the additional value for all function applications. 
+We can use apply again to but specifiy the additional value for all function applications. 
 ```{r}
 apply(data, 1, geom_mean2, constant=4)
 

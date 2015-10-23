@@ -1,5 +1,7 @@
 ---
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 
@@ -9,15 +11,21 @@ Design and Analysis of Computer Experiments
 **Jason Hilton and Jakub Bijak** - University of Southampton 
 
 
-Workshop given for IDEM 112 'Agent-based modelling and simulation'  
+Workshop given for IDEM 112 'A stochastic process approach to agent-based modeling and simulation'  
 Part of the MPIDR [International Advanced Studies in Demography series](http://www.demogr.mpg.de/en/education_career/international_advanced_studies_in_demography_3279/default.htm)
 
 Location: Max Planck Institute for Demographic Research, Rostock  
-Date: 30<sup>th</sup> October 2014
+Date: 26<sup>th</sup> October 2015
 
 ***
 
 #Introduction 
+```{r setup}
+library(knitr)
+set.seed(12345)
+opts_chunk$set(cache=T)
+```
+
 
 In this workshop, we shall work through examples of a number of the techniques discussed in the preceding lectures. 
 
@@ -33,19 +41,19 @@ This workshop leans heavily on ideas from:
 
 **Managing Uncertainty in Complex Models Toolkit** (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html) 
 
-**Santer, W., Williams, B, and Notz, W** (2003)  *'Design and Analysis of Computer Experiements'*, Springer  
+**Santer, W., Williams, B, and Notz, W** (2003)  *'Design and Analysis of Computer Experiments'*, Springer  
 
 
 We are also using fewer simulation runs than we might generally wish for. This is largely because we want you to spend more time trying out the various methods, and less time waiting for simulations to finish running!
 
-I suggest working through the examples below, executing the code yourself at each stage. There are few several tasks throughout the workshop for you to try yourself. Solutions are available for some of these if you get stuck.
+I suggest working through the examples below, executing the code yourself at each stage. There are several tasks throughout the workshop for you to try yourself. Solutions are available for some of these if you get stuck.
 
 #Part 1: Experimental Designs and Simple Metamodels  
 
 ## A First Experiment  
 We will start by running some very simple experiments to examine some of the ideas discussed in the lecture. 
 
-We will run NetLogo through R using the RNetLogo Library, which you are all familiar with. 
+We will run NetLogo through R using the RNetLogo Library, which you may be familiar with. 
 You will need to edit the 'nl.path' variable to point to the folder where NetLogo is installed on your machine.
 
 Notice the 'gui' option has been set to false throughout this workshop, as running in 'headless' mode results in quicker runs. The gui is great for development, debugging and demonstration, but not necessarily much use for 'production' runs (ie, those required to produce your results).
@@ -54,7 +62,7 @@ Notice the 'gui' option has been set to false throughout this workshop, as runni
 library(RNetLogo)
 
 ### CHANGE THIS PATH if necessary ###
-nl.path <- "C:\\Program Files (x86)\\NetLogo 5.0.4"
+nl.path <- "C:\\Program Files (x86)\\NetLogo 5.2.1"
 NLStart(nl.path, gui=F)
 
 ```
@@ -71,18 +79,18 @@ NLLoadModel( paste(nl.path, model.path,sep="") )
 ```
 
 Recall, we are interested in how our model **inputs** map to outputs or **responses**.
-In this case we have two main inputs - the micro-level preference for similar agents, and the total number of agents present. Given the fixed grid size of 51x51 patches, this latter input can also be thought of as the population density of the area in question. The output is the average proportion of similar neighbours over all agents - a proxy for segregation. 
+In this case we have two main inputs - the micro-level preference for similar agents, and the spatial population density. Given the fixed grid size of 51x51 patches, this latter input can also be thought of as relating to the proportion of occupied patches. The output is the average proportion of similar neighbours over all agents - a proxy for segregation. 
 
 Let's run the simulation at one combination of inputs and print the output to the screen.
 ```{r}
 NLCommand("set %-similar-wanted 50")
-NLCommand("set number 1500")
+NLCommand("set density 58")
 NLCommand("setup")
 NLDoCommand(100, "go")
 NLReport("percent-similar")
 ```
 
-Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of 1500 / 51 ^ 2 = `r 1500/51**2`, the average proportion of similar agents in a neighbourhood is around about 90%. 
+Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of 58%, the average proportion of similar agents in a neighbourhood is around about 90%. 
 
 ##Exploring the Parameter Space
 
@@ -91,25 +99,25 @@ We want to examine how this response varies over the parameter space. An obvious
 ```{r}
 # Our desired inputs - a sequence from 0 to 100 increasing by 10 for similar
 similar_desired_range <- seq(0, 100, 10)
-number <- 1500
+density <- 58
 
-runModel<-function(similar, num){
-  # function running the model for 50 ticks at inputs 'similar' and 'num' 
+runModel<-function(similar, den){
+  # function running the model for 50 ticks at inputs 'similar' and 'density' 
   # returning the global proportion similar
   NLCommand("set %-similar-wanted", similar)
-  NLCommand("set number", num)
+  NLCommand("set density", den)
   NLCommand("setup")
   NLDoCommand(50, "go")
   return(NLReport("percent-similar"))
 }
 
 # Apply the function runModel to each value in similar_desired, 
-# holding number of agents constant at 'number', returning results as an array.
-global_similar <- sapply(similar_desired_range, runModel, num = number)
+# holding population density constant at the value of 'density', returning results as an array.
+global_similar <- sapply(similar_desired_range, runModel, den = density)
 
 # plot the results 
 plot(similar_desired_range, global_similar, 
-     main = paste("Response by values of '%-similar-desired',", number, "agents"))
+     main = paste("Response by values of '%-similar-desired', population density =", density, "%"))
 
 ```
 
@@ -118,21 +126,10 @@ By observation, it seems that segregation increases with micro-level preference 
 
 ### *Task*
 
-Try holding '%-similar-desired' steady, and vary only the number of agents in the simulation ( and by extension the population density).
-Keep %-similar desired at 50, and run the model at value between 500 and 2500, at increments of 250. Plot the results
+Try holding '%-similar-desired' steady, and vary only the population density.
+Keep %-similar desired at 50, and run the model at values between 15% and 95%, at increments of 5%. Plot the results
 
-**A solution**  
-
-
-```{r}
-  similar_desired <- 50
-  number_range <- seq(500,2500,250)
-  global_similar2 <- sapply(X=number_range, runModel, similar = similar_desired)
-  plot(number_range, global_similar2, 
-       main = paste("Response by number of agents. %-similar-wanted = ", similar_desired ))
-```
-
-The results should imply that the number of agents tends to decrease segregation, although note the scale on the y-axis.
+The results should imply that increasing the density of agents tends to decrease segregation, although note the scale on the y-axis.
 
 By holding the one parameter fixed while varying the other, we are preventing ourselves from identifying any interaction between the variables, and leaving large areas of the parameter space unobserved. 
 
@@ -140,10 +137,10 @@ We can see this by simply plotting our design:
 
 ```{r}
 
-# this looks complicated I simply combine all inputs points we have already run into a single data frame, and plot them 
+# this looks complicated, but I simply combine all inputs points we have already run into a single data frame, and plot them 
 design <- data.frame(
-  similar_desired = c( similar_desired_range, rep(50, 9)),
-  number = c(rep(number,length(similar_desired_range)), seq(500,2500,250)))
+  similar_desired = c( similar_desired_range, rep(50, length(seq(15,95,5)))),
+  density = c(rep(density,length(similar_desired_range)), seq(15,95,5)))
 
 plot(design)
 
@@ -154,13 +151,13 @@ We will use 5 levels (this may take a few moments to run)
 
 ```{r}
 # expand.grid creates an array with all combination of the two arguments given
-fact_design <- expand.grid(similar_desired=seq(0,100,25), number=seq(500,2500,500))
+fact_design <- expand.grid(similar_desired=seq(0,100,25), density = seq(20,98,19))
 
 # plot the design 
 plot(fact_design)
 
 # fun the model at these combinations, using mapply to iterate through pairs of inputs
-fact_response<-mapply(runModel, fact_design$similar_desired, fact_design$number)
+fact_response<-mapply(runModel, fact_design$similar_desired, fact_design$density)
 
 ```
 
@@ -171,11 +168,11 @@ We can plot this as a surface using the persp command:
 persp(
       # get the unique values of each input
       unique(fact_design$similar_desired),
-      unique(fact_design$number), 
+      unique(fact_design$density), 
       # create a matrix of the output values
       matrix(fact_response,nrow =5),
       xlab = "Similar Desired",
-      ylab = "Number of Agents",
+      ylab = "Density of Agents",
       zlab = "Response",
       # some parameters governing viewing angle
       theta = 220,
@@ -190,11 +187,11 @@ less tuning to find a good viewing angle.
 
 ```{r}
 filled.contour(unique(fact_design$similar_desired),
-      unique(fact_design$number), 
+      unique(fact_design$density), 
       matrix(fact_response,nrow=5),
       xlab = "Similar Desired",
-      ylab = "Number of Agents",
-      main = "Average % Neighbour Similar by % similar desired and number of agents",
+      ylab = "Density of Agents",
+      main = "Average % Neighbour Similar by % similar desired and density of agents",
       cex.main = 0.9)
 ```
 
@@ -213,8 +210,8 @@ transformInput <- function(input, location, multiplier){
 }
 
 # we need to save these values for later transformations.
-locations<-apply(fact_design,2,min)
-multipliers<-apply(fact_design,2,max)- locations
+locations <- apply(fact_design,2,min)
+multipliers <- apply(fact_design,2,max)- locations
 
 # do the transformation by applying the transformInput function
 trans_design<-data.frame(mapply(transformInput, fact_design, locations, multipliers))
@@ -228,7 +225,7 @@ We will start by fitting just a simple linear term for each input.
 
 ```{r simple lm}
 # we use the standard R linear model command. 
-model1<-with(trans_design, lm(response ~ similar_desired + number))
+model1<-with(trans_design, lm(response ~ similar_desired + density))
 summary(model1)
 
 ```
@@ -247,7 +244,7 @@ Let's try adding higher order terms, and an interaction term:
 ```{r}
 # Model with interaction and squared terms
 model2<- with(trans_design, 
-              lm( response ~ similar_desired * number + I (number**2) 
+              lm( response ~ similar_desired * density + I (density**2) 
                   + I(similar_desired**2)))
 summary(model2)
 
@@ -257,7 +254,7 @@ The residuals are still not perfect, but are considerably better than before.
 
 ```{r}
 plot(trans_design$similar_desired, rstandard(model2))
-plot(trans_design$number, rstandard(model2))
+plot(trans_design$density, rstandard(model2))
 qqnorm(rstandard(model2))
 qqline(rstandard(model2))
 ``` 
@@ -267,8 +264,8 @@ qqline(rstandard(model2))
 If we are to trust the results of meta-model, we need to confirm that it is a good fit for the underlying simulation. The best way of doing this is to run the simulation at new points, and compare these to the model predictions. 
 
 ```{r}
-new_points <- data.frame(similar_desired = runif(10, 0, 100), number = runif(10, 500, 2500))
-valid_response <- mapply(runModel, new_points$similar_desired, new_points$number)
+new_points <- data.frame(similar_desired = runif(10, 0, 100), density = runif(10, 20, 95))
+valid_response <- mapply(runModel, new_points$similar_desired, new_points$density)
 
 
 trans_new_points <- data.frame(mapply(transformInput, 
@@ -317,49 +314,6 @@ How does the RMSE for the lhs design compare to the factorial design using the s
 - *Tip* : The function improvedLHS takes two arguments - the number of inputs to generate, and the number of dimensions.
 - *Tip* : It also produces a design scaled to between 0 and 1 You will need to scale it up again to lie in the range of the individual inputs before you run the model.
 
-
-* A Solution* 
-```{r}
-library(lhs)
-scaledDesign<-data.frame(improvedLHS(25,2))
-head(scaledDesign)
-
-colnames(scaledDesign)<-c("similar_desired", "number")
-
-lhs_design <- mapply(function(x,multiplier,location) (x*multiplier) + location, 
-       scaledDesign,multipliers, locations  )
-
-plot(lhs_design)
-
-colnames(lhs_design)<-c("similar_desired", "number")
-
-lhs_design<-data.frame(lhs_design)
-
-lhs_response<-mapply(runModel, lhs_design$similar_desired, lhs_design$number)
-
-scaledDesign$response<-lhs_response
-
-model_lhs1<-with(scaledDesign, lm(response~similar_desired+ number))
-
-model_lhs2<- with(scaledDesign, 
-              lm( response ~ similar_desired * number + I (number**2) 
-                  + I(similar_desired**2)))
-
-
-
-model_predictions_lhs <- predict(model_lhs2, trans_new_points)
-
-error <- valid_response-model_predictions_lhs
-
-# Root Mean Squared Error
-RMSE_lhs <- sqrt(sum(error**2)/length(error))
-
-# 'Normalised' RMSE
-RMSE_lhs/diff(range(trans_design$response))
-
-RMSE/diff(range(trans_design$response))
-
-```
 
 
 The main advantage of LHS designs, however, is that you can get away with many fewer runs, particularly in higher dimensions, and when use in combined with kriging-type models.  
@@ -474,11 +428,11 @@ system.time(
 proportion_burned_60 <- c( proportion_burned_60,  proportion_burned_60_par)
 
 ```
-Hopefully you should notice that this took less time per run than before! We did twice as many runs this time, so we would hope the elapsed time is considerably less than twice the previous value. If not this is probably due to the overhead associated with sending information to different cores and putting it back together again. The more runs you are hoping to do, the more likely it is that you will be able to see benefits from parallelising your model runs.
+Hopefully you should notice that this took less time per run than before! We did twice as many runs this time, so we would hope the elapsed time is considerably less than twice the previous value. If not, this is probably due to the overhead associated with sending information to different cores and putting it back together again. The more runs you are hoping to do, the more likely it is that you will be able to see benefits from parallelising your model runs.
 
 Note that if you are running this on a Mac or a LINUX based system such as Ubuntu, then you might be able to use the much simpler mclapply function (which, in my experience, is also faster).  
 
-Lets plot our outputs. We can also use the 'density' command to plot the smoothed continuous density of our observations.
+Let's plot our outputs. We can also use the 'density' command to plot the smoothed continuous density of our observations.
 
 ```{r}
 hist(proportion_burned_60,breaks = 15)
@@ -499,51 +453,6 @@ densities<-seq(51, 81, 6)
 ```
 
 
-**A solution**
-```{r}
-# make a vectore of the density points we want to run, including repeats
-densities_rep<-unlist(lapply(densities, rep, 25))
-# run the model for these densties
-proportion_burned <- parSapply(cl, densities_rep, runModel)
-fire_outputs<-data.frame(densities_rep, proportion_burned)
-
-# example histogram 
-with (fire_outputs, hist(proportion_burned[densities_rep==57]))
-
-#get variance at each density
-variances<-sapply(densities, 
-            function(den){
-              var(fire_outputs$proportion_burned[fire_outputs$densities_rep==den ])
-            }) 
-# NB a more elegant way to do this would be to use the plyr package. 
-
-plot(densities, variances, ylim=c(0,0.05))
-points(60, var(proportion_burned_60))
-
-```
-
-###*Task*
-Next, let's assume we have some prior information about the density of a particular forest we are interested in. We want to know what the probability of various proportions of forest destruction is, given our prior information, which is expressed as a probability distribution over possible density values.
-
-Our prior assumption is that the density of the forest has a normal distribution with mean 56 and sd 1.5 . Sample from this distribution using rnorm, and run the simulation at the sampled points. Plot the density of this output distribution. 
-
-Now try the same exercise, but just hold the input steady at its mean value, and examine the difference between the two distributions. 
-
-```{r}
-
-prior<-rnorm(100,56,1.5)
-
-proportion_burned <- parSapply(cl, prior, runModel)
-
-hist(proportion_burned)
-
-proportion_burned_mean <- parSapply(cl, rep(56,50), runModel)
-
-hist(proportion_burned_mean)
-
-```
-
-
 This is an example of incorporating the effect of *input uncertainty* into our output predictions. (Note this is NOT a case of full Bayesian updating - we have not applied Bayes rule to get a posterior, but used the prior and the model to induce a distribution on our output variable).
 
 ```{r}
@@ -561,7 +470,7 @@ stopCluster(cl)
 
 Here we will go back to our Schelling model and fit two different kriging models. 
 
-We will start by examining the DiceKriging package, which you will need to install from CRAN. This package uses the km command to create a kriging model object in the same way as the lm linear model command.
+We will start by examining the `DiceKriging` package, which you will need to install from CRAN. This package uses the `km` command to create a kriging model object in the same way as the `lm` linear model command.
 
 Use the LHS sample and associated response you created earlier to fit the model.
 
@@ -569,14 +478,14 @@ Use the LHS sample and associated response you created earlier to fit the model.
 lhs_design$response<-lhs_response
 library("DiceKriging")
 
-kriging_m1<-km(response~similar_desired + number, lhs_design[,c(1,2)], lhs_design[,3], nugget.estim=T)
+kriging_m1<-km(response~similar_desired + density, lhs_design[,c(1,2)], lhs_design[,3], nugget.estim=T)
 
 kriging_m1
 ```
 
 The dice kriging command fits a kriging model, so that data point estimates are the sum of a linear trend and deviations from this trend drawn from a Gaussian process.
 
-The trend coefficients are the first elements of the output, and include an intercept and a linear term for each parameter. The output also tells us that the a matern5_2 kernel was used - which defines the shape of the covariance function. Other kernels are available - experiment with them if you wish.  It also gives us the estimates of the correllation parameters (here 'theta'), and the variance and nugget effects. 
+The trend coefficients are the first elements of the output, and include an intercept and a linear term for each parameter. The output also tells us that the a matern5_2 kernel was used - which defines the shape of the covariance function. Other kernels are available - experiment with them if you wish.  It also gives us the estimates of the correlation parameters (here 'theta'), and the variance and nugget effects. 
 
 The nugget effect here accounts for simulation stochasticity, while the variance parameter refers to input related variance. 
 
@@ -584,9 +493,9 @@ We can make predictions for new values using the predict command. Lets make pred
 
 ```{r} 
 similar_ins<-seq(0,100,2)
-number_ins<-seq(500,2500,50)
+densities_ins<-seq(20,95,5)
 
-fullSpace<- data.frame(expand.grid(similar_ins, number_ins))
+fullSpace<- data.frame(expand.grid(similar_ins, densities_ins))
 dim(fullSpace)
 #lots of points!
 
@@ -597,7 +506,7 @@ predictions<-predict(kriging_m1, fullSpace, "UK")
 
 prediction.surface<-matrix(predictions$mean, 51)
 
-filled.contour(similar_ins, number_ins, prediction.surface )
+filled.contour(similar_ins, densities_ins, prediction.surface )
 
 ```
 
@@ -607,7 +516,7 @@ What do you notice?
 
 
 ## Gaussian Process Models with GEM-SA
-We can also try fitting the same model in the software GEM-SA (with kind thanks to Marc Kennedy for a kind permission).
+We can also try fitting the same model in the software GEM-SA (with kind thanks to Marc Kennedy for permission).
 This is available as a stand-alone application here: [http://ctcd.group.shef.ac.uk/gem.html](http://ctcd.group.shef.ac.uk/gem.html)
 
 To use the software, we first of all need to save our simulation inputs and results in a format that can be read by the software.
@@ -628,6 +537,7 @@ Now open GEM-SA.
 2. Next, in the resulting dialogue box, pick the inputs file you have just saved from the browse menu.  
 
 3. Similarly, browse to your outputs file. Leave predictions blank for the moment.  
+![gemsa1](figure/gemsa1.png) 
 
 4. Now, click on the options tab. We have two inputs, so input '2' in the number of inputs box. You can name them appropriately if you wish by pressing the 'Names' button.     
 
@@ -635,6 +545,7 @@ Now open GEM-SA.
 
 6. Under the Input uncertainty options, check the All unknown, product normal option.
 This states that we do not know for certain the true values of the parameters in questions, but we expect them to be jointly normal.  
+![gemsa2](figure/gemsa2.png) 
 
 7. Don't worry about the simulations tab - this refers only to the MCMC parameter estimation procedure.  
 
@@ -681,9 +592,10 @@ Cutting edge.
 
 **Managing Uncertainty in Complex Models Toolkit** (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html) 
 
-**Santer, W., Williams, B, and Notz, W** (2003)  *'Design and Analysis of Computer Experiements'*, Springer  
+**Santer, W., Williams, B, and Notz, W** (2003)  *'Design and Analysis of Computer Experiments'*, Springer  
 
 ##Model Citations
 Wilensky, U. (1997). NetLogo Segregation model. http://ccl.northwestern.edu/netlogo/models/Segregation. Center for Connected Learning and Computer-Based Modeling, Northwestern Institute on Complex Systems, Northwestern University, Evanston, IL.
 
+Wilensky, U. (1997). NetLogo Fire model. http://ccl.northwestern.edu/netlogo/models/Fire. Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
 
