@@ -33,7 +33,7 @@ This workshop leans heavily on ideas from:
 
 **Managing Uncertainty in Complex Models Toolkit** (2011), MUCM project, [http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html](http://mucm.aston.ac.uk/toolkit/index.php?page=MetaHomePage.html) 
 
-**Santer, W., Williams, B, and Notz, W** (2003)  *'Design and Analysis of Computer Experiements'*, Springer  
+**Santer, W., Williams, B, and Notz, W** (2003)  *'Design and Analysis of Computer Experiments'*, Springer  
 
 
 We are also using fewer simulation runs than we might generally wish for. This is largely because we want you to spend more time trying out the various methods, and less time waiting for simulations to finish running!
