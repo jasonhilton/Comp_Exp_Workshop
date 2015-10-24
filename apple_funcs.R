@@ -63,13 +63,14 @@ parse_results<-function(results){
 
 make_run_model_command <- function(nl_path, model_path, experiment_path, 
                                    metric,variables, timeLimit=50){
-  runModel <- function(...){
+  runModel <- function(..., run_no=1){
     values <- c(...)
     prefix <- '<?xml version="1.0" encoding="us-ascii"?>'
     exp_doc <- make_experiments_doc(variables, values, metric ,timeLimit=timeLimit)
-    saveXML(exp_doc, file=experiment_path, prefix = prefix, 
+    experiment_file <- file.path(experiment_path, paste("experiment", run_no, ".xml", sep=""))
+    saveXML(exp_doc, file=experiment_file, prefix = prefix,
             encoding = "us-ascii")
-    cmd <- construct_nl_command(nl_path, model_path, experiment_path)
+    cmd <- construct_nl_command(nl_path, model_path, experiment_file)
     out <- system(cmd, intern=T)
     return(parse_results(out))
   }

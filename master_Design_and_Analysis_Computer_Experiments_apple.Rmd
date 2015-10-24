@@ -31,7 +31,8 @@ opts_chunk$set(cache=F)
 
 In this workshop, we shall work through examples of a number of the techniques discussed in the preceding lectures. 
 
-All files and supporting information are available on the github page [https://github.com/jasonhilton/Comp_Exp_Workshop](https://github.com/jasonhilton/Comp_Exp_Workshop).
+All files and supporting information are available on the github page [https://github.com/jasonhilton/Comp_Exp_Workshop](https://github.com/jasonhilton/Comp_Exp_Workshop). If you are familiar with the git version control software, you should be able to clone into this repository using the command `git clone https://github.com/jasonhilton/Comp_Exp_Workshop.git`
+If not you can also download the files as a zip. To run the workshop code on a mac you will need at least the `apple_funcs.R` file, which contains R functions enabling communication with netlogo.
 
 I shall try to keep the R code is clear as possible throughout, and include comments and explanations in the text, but remember that you can use the '?' command to access the R help for any command if necessary.
 Try this for the *lapply* function. The apply family of functions are used a lot in the workshop below. If you are not familiar with them, there's a brief introduction at 
@@ -62,14 +63,19 @@ We also need to give a path where an temporary .xml file can be safely created.
 
 ```{r}
 
+# We need to install the XML package - this is to create 'experiment' files that netlogo can read.
 install.packages("XML")
 library(XML)
 ### V CHANGE THIS PATH V ###
 nl.path <- "C:\\Program Files (x86)\\NetLogo 5.2.1"
+#nl.path <- path.expand("~/netlogo-5.2.0/")
 # V some directory where a temporary file can be created V (Choose your own!)
-experiment_path <- path.expand("~/temp_experiment.xml")
+experiment_path <- path.expand("~")
+
 
 #load some helper functions 
+# you need to set your working directory to the location where this file apple_funcs is saved
+#setwd("")
 source("apple_funcs.R")
 
 ```
