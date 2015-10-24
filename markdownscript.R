@@ -3,6 +3,7 @@ setwd("Z:/mydocuments/Documents/conferences and papers/abm course")
 library(knitr)
 
 
+knit("master_Mac_Design_and_Analysis_Computer_Experiments.Rmd")
 knit("master_Design_and_Analysis_Computer_Experiments.Rmd")
 
 render("master_Design_and_Analysis_Computer_Experiments.md", pdf_document())
