@@ -23,7 +23,7 @@ Date: 26<sup>th</sup> October 2015
 ```{r setup}
 library(knitr)
 set.seed(14533)
-opts_chunk$set(cache=T)
+opts_chunk$set(cache=F)
 
 ```
 
@@ -67,15 +67,14 @@ We also need to give a path where an temporary .xml file can be safely created.
 # install.packages("XML")
 library(XML)
 ### V CHANGE THIS PATH V ###
-nl.path <- "C:\\Program Files (x86)\\NetLogo 5.2.1"
-#nl.path <- path.expand("~/netlogo-5.2.0/")
+#nl.path <- "C:\\Program Files (x86)\\NetLogo 5.2.1"
+nl.path <- path.expand("~/netlogo-5.2.1/")
 # V some directory where a temporary file can be created V (Choose your own!)
 experiment_path <- path.expand("~")
 
 
 #load some helper functions 
 # you need to set your working directory to the location where this file apple_funcs is saved
-#setwd("")
 source("apple_funcs.R")
 
 ```
@@ -469,7 +468,7 @@ system.time(
   number_burned_60_par <- mcmapply(runModel,rep(60,100), run_no=1:100, mc.cores=cores)
 )
 
-proportion_burned_60_par <- number_burned / (possible_trees * (60/100.0 ))
+proportion_burned_60_par <- number_burned_60_par / (possible_trees * (60/100.0 ))
 
 proportion_burned_60 <- c( proportion_burned_60,  proportion_burned_60_par)
 
