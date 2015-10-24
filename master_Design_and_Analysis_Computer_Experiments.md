@@ -1,8 +1,3 @@
----
-output: 
-  html_document: 
-    keep_md: yes
----
 
 
 Design and Analysis of Computer Experiments
@@ -57,7 +52,24 @@ Notice the 'gui' option has been set to false throughout this workshop, as runni
 
 ```r
 library(RNetLogo)
+```
 
+```
+## Loading required package: rJava
+## Loading required package: igraph
+## 
+## Attaching package: 'igraph'
+## 
+## The following objects are masked from 'package:stats':
+## 
+##     decompose, spectrum
+## 
+## The following object is masked from 'package:base':
+## 
+##     union
+```
+
+```r
 ### CHANGE THIS PATH if necessary ###
 nl.path <- "C:\\Program Files (x86)\\NetLogo 5.2.1"
 NLStart(nl.path, gui=F)
@@ -89,7 +101,7 @@ NLReport("percent-similar")
 ```
 
 ```
-## [1] 88.60794
+## [1] 88.71532
 ```
 
 Here we see that for agents desiring at least half of their neighbours to be similar to themselves, together with a population density of 58%, the average proportion of similar agents in a neighbourhood is around about 90%. 
@@ -123,7 +135,7 @@ plot(similar_desired_range, global_similar,
      main = paste("Response by values of '%-similar-desired', population density =", density, "%"))
 ```
 
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-4-1.png) 
 
 By observation, it seems that segregation increases with micro-level preference for similar neighbours up to a threshold of about 70-80% desired similar neighbours, at which point there is a sharp decrease to the 50%. Why might this be the case?
 
@@ -145,7 +157,7 @@ Keep %-similar desired at 50, and run the model at values between 15% and 95%, a
        main = paste("Response by density of agents. %-similar-wanted = ", similar_desired ))
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-5-1.png) 
 
 The results should imply that increasing the density of agents tends to decrease segregation, although note the scale on the y-axis.
 
@@ -163,7 +175,7 @@ design <- data.frame(
 plot(design)
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-6-1.png) 
 
 To examine the corners of the parameter space, and to attempt to capture interactions between the variables, we will now run our simulation on a full factorial design. 
 We will use 5 levels (this may take a few moments to run)  
@@ -177,7 +189,7 @@ fact_design <- expand.grid(similar_desired=seq(0,100,25), density = seq(20,98,19
 plot(fact_design)
 ```
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-7-1.png) 
 
 ```r
 # fun the model at these combinations, using mapply to iterate through pairs of inputs
@@ -205,7 +217,7 @@ persp(
       )
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-8-1.png) 
 
 This looks nice, but generally a contour plot is easier to interpret, and requires
 less tuning to find a good viewing angle. 
@@ -221,7 +233,7 @@ filled.contour(unique(fact_design$similar_desired),
       cex.main = 0.9)
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-9-1.png) 
 
 With both these methods, we have to be carefull to realise that the plot algorithms are interpolating between the points we have observed using a simple meta-model. Also note that the surface is pretty uneven. This is because we are dealling with a *stochastic simulator*, so the unevenness is likely to be attributible to random noise from NetLogo's random number generator. We will talk more about randomness in the part 2 of this workshop. 
 
@@ -265,19 +277,19 @@ summary(model1)
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -29.745 -12.029  -2.484  16.337  24.998 
+## -27.289 -13.304  -1.677  14.938  24.154 
 ## 
 ## Coefficients:
 ##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)        72.47       7.91   9.161  5.8e-09 ***
-## similar_desired    14.93      10.01   1.492   0.1499    
-## density           -18.41      10.01  -1.840   0.0793 .  
+## (Intercept)       72.051      7.862   9.164 5.77e-09 ***
+## similar_desired   14.587      9.945   1.467    0.157    
+## density          -16.748      9.945  -1.684    0.106    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 17.69 on 22 degrees of freedom
-## Multiple R-squared:  0.2033,	Adjusted R-squared:  0.1308 
-## F-statistic: 2.807 on 2 and 22 DF,  p-value: 0.08211
+## Residual standard error: 17.58 on 22 degrees of freedom
+## Multiple R-squared:  0.1848,	Adjusted R-squared:  0.1107 
+## F-statistic: 2.494 on 2 and 22 DF,  p-value: 0.1057
 ```
 
 This is not a good fit to the data, which is unsurprising given we observed significant curvature in our response surface. This curvature cannot be captured by linear terms in our model.
@@ -289,7 +301,7 @@ Problems with this model can clearly be identified by plotting the standardised 
 plot(trans_design$similar_desired, rstandard(model1))
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-11-1.png) 
 
 Let's try adding higher order terms, and an interaction term: 
 
@@ -310,22 +322,22 @@ summary(model2)
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -16.291  -7.061   1.431   5.794  16.929 
+## -14.472  -5.837   1.954   4.942  17.331 
 ## 
 ## Coefficients:
 ##                         Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)               52.332      6.344   8.249 1.06e-07 ***
-## similar_desired          161.072     19.795   8.137 1.30e-07 ***
-## density                  -25.902     19.795  -1.309    0.206    
-## I(density^2)              18.699     17.617   1.061    0.302    
-## I(similar_desired^2)    -134.932     17.617  -7.659 3.18e-07 ***
-## similar_desired:density  -22.422     14.739  -1.521    0.145    
+## (Intercept)               52.460      5.971   8.786 4.05e-08 ***
+## similar_desired          161.015     18.629   8.643 5.22e-08 ***
+## density                  -23.979     18.629  -1.287    0.213    
+## I(density^2)              15.996     16.580   0.965    0.347    
+## I(similar_desired^2)    -137.663     16.580  -8.303 9.60e-08 ***
+## similar_desired:density  -17.530     13.871  -1.264    0.222    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 9.212 on 19 degrees of freedom
-## Multiple R-squared:  0.8134,	Adjusted R-squared:  0.7642 
-## F-statistic: 16.56 on 5 and 19 DF,  p-value: 2.385e-06
+## Residual standard error: 8.67 on 19 degrees of freedom
+## Multiple R-squared:  0.8288,	Adjusted R-squared:  0.7837 
+## F-statistic:  18.4 on 5 and 19 DF,  p-value: 1.076e-06
 ```
 This model fits the data much better, and a higher proportion of variance is accounted for, as can be observed from the value of R<sup>2</sup>.
 The residuals are still not perfect, but are considerably better than before.
@@ -335,20 +347,20 @@ The residuals are still not perfect, but are considerably better than before.
 plot(trans_design$similar_desired, rstandard(model2))
 ```
 
-![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-13-1.png) 
 
 ```r
 plot(trans_design$density, rstandard(model2))
 ```
 
-![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-2.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-13-2.png) 
 
 ```r
 qqnorm(rstandard(model2))
 qqline(rstandard(model2))
 ```
 
-![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-3.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-13-3.png) 
 
 
 ## Validation
@@ -374,7 +386,7 @@ RMSE/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.3156477
+## [1] 0.3075109
 ```
 
 The normalised RMSE is probably too high for this model. The RMSE is a metric for assessing prediction error  based on the root of the average squared error, divided by the range over which the training set response varies. 
@@ -397,13 +409,13 @@ model_an["Sum Sq"]/sum(model_an["Sum Sq"])
 ```
 
 ```
-##                             Sum Sq
-## similar_desired         0.08062908
-## density                 0.12264919
-## I(density^2)            0.01106766
-## I(similar_desired^2)    0.57627381
-## similar_desired:density 0.02273368
-## Residuals               0.18664657
+##                              Sum Sq
+## similar_desired         0.079716293
+## density                 0.105086748
+## I(density^2)            0.008387423
+## I(similar_desired^2)    0.621216663
+## similar_desired:density 0.014391078
+## Residuals               0.171201797
 ```
 Note the percentages sum to one by construction. This indicates that the squared effect of similar-desired is the most significant in our model. This fits with our eyeball intuition, noting the curved nature of the response surface. 
 
@@ -447,7 +459,7 @@ lhs_design <- mapply(function(x,multiplier,location) (x*multiplier) + location,
 plot(lhs_design)
 ```
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-16-1.png) 
 
 ```r
 colnames(lhs_design)<-c("similar_desired", "density")
@@ -478,7 +490,7 @@ RMSE_lhs/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.2132203
+## [1] 0.2142685
 ```
 
 ```r
@@ -486,7 +498,7 @@ RMSE/diff(range(trans_design$response))
 ```
 
 ```
-## [1] 0.3156477
+## [1] 0.3075109
 ```
 
 
@@ -531,10 +543,10 @@ for (i in 1:4){
 ```
 
 ```
-## [1] 0.528783
-## [1] 0.7445916
-## [1] 0.7808464
-## [1] 0.6817882
+## [1] 0.670734
+## [1] 0.7394781
+## [1] 0.2757692
+## [1] 0.7774402
 ```
 
 
@@ -563,14 +575,14 @@ system.time( proportion_burned_60 <- sapply(rep(60, 50), runModel ))
 
 ```
 ##    user  system elapsed 
-##   61.70    1.30   62.65
+##   68.55    0.94   64.18
 ```
 
 ```r
 hist(proportion_burned_60)
 ```
 
-![plot of chunk unnamed-chunk-20](figure/unnamed-chunk-20-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-20-1.png) 
 
 Notice how the results are spread over almost all the whole of the output space, with most of the density concentrated at the right of the distribution. Ideally we want to consider how this distribution changes across the parameter space.
 
@@ -631,7 +643,7 @@ system.time(
 
 ```
 ##    user  system elapsed 
-##    0.97    1.15   53.17
+##    0.01    0.02   59.62
 ```
 
 ```r
@@ -648,20 +660,20 @@ Let's plot our outputs. We can also use the 'density' command to plot the smooth
 hist(proportion_burned_60,breaks = 15)
 ```
 
-![plot of chunk unnamed-chunk-23](figure/unnamed-chunk-23-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-23-1.png) 
 
 ```r
 plot( density( proportion_burned_60 ) )
 ```
 
-![plot of chunk unnamed-chunk-23](figure/unnamed-chunk-23-2.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-23-2.png) 
 
 ```r
 var(proportion_burned_60)
 ```
 
 ```
-## [1] 0.02594687
+## [1] 0.03315626
 ```
 
 We now have 150 runs, and we can see from the above histogram that the distribution is pretty irregular. Clearly, a normality assumption will not be appropriate in this case. 
@@ -690,7 +702,7 @@ fire_outputs<-data.frame(densities_rep, proportion_burned)
 with (fire_outputs, hist(proportion_burned[densities_rep==57]))
 ```
 
-![plot of chunk unnamed-chunk-25](figure/unnamed-chunk-25-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-25-1.png) 
 
 ```r
 #get variance at each density
@@ -704,7 +716,7 @@ plot(densities, variances, ylim=c(0,0.05))
 points(60, var(proportion_burned_60))
 ```
 
-![plot of chunk unnamed-chunk-25](figure/unnamed-chunk-25-2.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-25-2.png) 
 
 ###*Task*
 Next, let's assume we have some prior information about the density of a particular forest we are interested in. We want to know what the probability of various proportions of forest destruction is, given our prior information, which is expressed as a probability distribution over possible density values.
@@ -722,7 +734,7 @@ proportion_burned <- parSapply(cl, prior, runModel)
 hist(proportion_burned)
 ```
 
-![plot of chunk unnamed-chunk-26](figure/unnamed-chunk-26-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-26-1.png) 
 
 ```r
 proportion_burned_mean <- parSapply(cl, rep(56,50), runModel)
@@ -730,7 +742,7 @@ proportion_burned_mean <- parSapply(cl, rep(56,50), runModel)
 hist(proportion_burned_mean)
 ```
 
-![plot of chunk unnamed-chunk-26](figure/unnamed-chunk-26-2.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-26-2.png) 
 
 
 This is an example of incorporating the effect of *input uncertainty* into our output predictions. (Note this is NOT a case of full Bayesian updating - we have not applied Bayes rule to get a posterior, but used the prior and the model to induce a distribution on our output variable).
@@ -802,39 +814,53 @@ kriging_m1<-km(response~similar_desired + density, lhs_design[,c(1,2)], lhs_desi
 ##   - parameters lower bounds :  1e-10 1e-10 
 ##   - parameters upper bounds :  193.2312 145.7616 
 ##   - upper bound for alpha   :  1 
-##   - best initial criterion value(s) :  -90.65762 
+##   - best initial criterion value(s) :  -85.96585 
 ## 
 ## N = 3, M = 5 machine precision = 2.22045e-16
 ## At X0, 0 variables are exactly at the bounds
-## At iterate     0  f=       90.658  |proj g|=      0.22357
-## At iterate     1  f =       89.916  |proj g|=       0.20514
-## At iterate     2  f =       89.573  |proj g|=       0.19505
-## At iterate     3  f =       89.469  |proj g|=       0.19447
-## At iterate     4  f =       89.467  |proj g|=         0.993
-## At iterate     5  f =       89.466  |proj g|=       0.99261
-## At iterate     6  f =       89.464  |proj g|=       0.19532
-## At iterate     7  f =       89.453  |proj g|=        0.1947
-## At iterate     8  f =       89.426  |proj g|=       0.19492
-## At iterate     9  f =       89.351  |proj g|=        0.1979
-## At iterate    10  f =       89.139  |proj g|=       0.20886
-## At iterate    11  f =       81.459  |proj g|=       0.10257
-## At iterate    12  f =        78.22  |proj g|=       0.98264
-## At iterate    13  f =         78.2  |proj g|=       0.98442
-## At iterate    14  f =       78.187  |proj g|=      0.016989
-## At iterate    15  f =       78.187  |proj g|=      0.016921
-## At iterate    16  f =       78.187  |proj g|=     0.0093073
-## At iterate    17  f =       78.187  |proj g|=      0.013392
+## At iterate     0  f=       85.966  |proj g|=      0.22067
+## At iterate     1  f =        85.96  |proj g|=       0.75481
+## At iterate     2  f =       85.934  |proj g|=        0.9529
+## At iterate     3  f =       85.799  |proj g|=       0.95434
+## At iterate     4  f =       85.579  |proj g|=       0.94568
+## At iterate     5  f =       85.548  |proj g|=      0.060636
+## At iterate     6  f =       85.548  |proj g|=       0.16112
+## At iterate     7  f =       85.548  |proj g|=      0.053868
+## At iterate     8  f =       85.548  |proj g|=     0.0068957
+## At iterate     9  f =       85.548  |proj g|=     0.0082021
+## At iterate    10  f =       85.548  |proj g|=      0.044715
+## At iterate    11  f =       85.548  |proj g|=      0.060602
+## At iterate    12  f =       85.548  |proj g|=       0.06075
+## At iterate    13  f =       85.548  |proj g|=      0.060988
+## At iterate    14  f =       85.548  |proj g|=      0.061378
+## At iterate    15  f =       85.547  |proj g|=       0.06202
+## At iterate    16  f =       85.546  |proj g|=       0.06309
+## At iterate    17  f =       85.542  |proj g|=      0.064829
+## At iterate    18  f =       85.534  |proj g|=       0.06737
+## At iterate    19  f =       85.516  |proj g|=      0.069865
+## At iterate    20  f =       85.495  |proj g|=      0.067766
+## At iterate    21  f =       85.486  |proj g|=      0.061715
+## At iterate    22  f =       85.486  |proj g|=      0.061947
+## At iterate    23  f =       85.486  |proj g|=       0.06243
+## At iterate    24  f =       85.485  |proj g|=       0.06335
+## At iterate    25  f =       85.483  |proj g|=      0.064634
+## At iterate    26  f =       85.478  |proj g|=      0.066018
+## At iterate    27  f =        85.47  |proj g|=      0.066366
+## At iterate    28  f =       85.461  |proj g|=       0.31127
+## At iterate    29  f =        85.46  |proj g|=      0.015066
+## At iterate    30  f =        85.46  |proj g|=     0.0023948
+## At iterate    31  f =        85.46  |proj g|=    0.00015146
 ## 
-## iterations 17
-## function evaluations 32
-## segments explored during Cauchy searches 20
+## iterations 31
+## function evaluations 38
+## segments explored during Cauchy searches 32
 ## BFGS updates skipped 0
-## active bounds at final generalized Cauchy point 0
-## norm of the final projected gradient 0.0133921
-## final function value 78.1873
+## active bounds at final generalized Cauchy point 1
+## norm of the final projected gradient 0.000151455
+## final function value 85.4601
 ## 
-## F = 78.1873
-## final  value 78.187303 
+## F = 85.4601
+## final  value 85.460118 
 ## converged
 ```
 
@@ -850,19 +876,19 @@ kriging_m1
 ## 
 ## Trend  coeff.:
 ##                   Estimate
-##     (Intercept)    83.4767
-## similar_desired     0.0238
-##         density    -0.2212
+##     (Intercept)    80.3418
+## similar_desired     0.0454
+##         density    -0.2038
 ## 
 ## Covar. type  : matern5_2 
 ## Covar. coeff.:
 ##                          Estimate
-## theta(similar_desired)    17.7635
-##         theta(density)   123.0492
+## theta(similar_desired)    15.9554
+##         theta(density)   145.7616
 ## 
-## Variance estimate: 205.7079
+## Variance estimate: 205.7342
 ## 
-## Nugget effect estimate: 3.537085
+## Nugget effect estimate: 13.48314
 ```
 
 The dice kriging command fits a kriging model, so that data point estimates are the sum of a linear trend and deviations from this trend drawn from a Gaussian process.
@@ -899,7 +925,7 @@ prediction.surface<-matrix(predictions$mean, 51)
 filled.contour(similar_ins, densities_ins, prediction.surface )
 ```
 
-![plot of chunk unnamed-chunk-29](figure/unnamed-chunk-29-1.png) 
+![](master_Design_and_Analysis_Computer_Experiments_files/figure-html/unnamed-chunk-29-1.png) 
 
 ### *Optional Task*
 Try constructing the same plot for predictions from the earlier quadratic model using lm.
