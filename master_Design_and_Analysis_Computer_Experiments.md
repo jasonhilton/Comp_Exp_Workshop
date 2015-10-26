@@ -934,7 +934,7 @@ What do you notice?
 
 ## Gaussian Process Models with GEM-SA
 We can also try fitting the same model in the software GEM-SA (with kind thanks to Marc Kennedy for permission).
-This is available as a stand-alone application here: [http://ctcd.group.shef.ac.uk/gem.html](http://ctcd.group.shef.ac.uk/gem.html)
+This is available as a stand-alone application here: [http://www.tonyohagan.co.uk/academic/GEM/GEM-SA1_1.zip](http://www.tonyohagan.co.uk/academic/GEM/GEM-SA1_1.zip)
 
 To use the software, we first of all need to save our simulation inputs and results in a format that can be read by the software.
 
